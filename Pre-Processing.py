@@ -9,7 +9,6 @@ from nltk.tokenize import word_tokenize
 # Read data
 df = pd.read_csv("Symptom2Disease.csv")
 df.drop("Unnamed: 0", inplace=True, axis=1)
-
 print("\n===== before =====")
 print(df[:5])
 

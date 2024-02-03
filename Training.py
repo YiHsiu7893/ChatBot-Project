@@ -100,13 +100,6 @@ train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=batch_size)
 
 
-"""
-sentences = word2vec.LineSentence("result.txt")
-model = word2vec.Word2Vec(sentences, min_count=1)
-word_vector = model.wv["火雞肉飯"]
-print("Vector representation: ", word_vector)
-"""
-
 def check_accuracy(train_loader, val_loader, model):
     model.eval()
     train_correct = train_total = val_correct = val_total = 0

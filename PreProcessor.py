@@ -1,16 +1,8 @@
 import string
-import pandas as pd
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 import contractions
 from nltk.tokenize import word_tokenize
-
-
-# Read data
-df = pd.read_csv("Symptom2Disease.csv")
-df.drop("Unnamed: 0", inplace=True, axis=1)
-print("\n===== before =====")
-print(df[:5])
 
 
 # Deal with contractions
@@ -41,8 +33,3 @@ def Preprocessing(sent):
 
     #return " ".join(lemmatized_word)
     return lemmatized_word
-
-
-df["text"] = df["text"].apply(Preprocessing)
-print("\n===== after =====")
-print(df[:5])

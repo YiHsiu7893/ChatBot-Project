@@ -26,7 +26,7 @@ def Preprocessing(sent):
 
     # Remove stopwords
     words = word_tokenize(sent)
-    words = [word.lower() for word in words if word not in stop_words]
+    words = [word.lower() for word in words if word not in stop_words or word=="yes" or word=="no"]
 
     # Lemmatization
     lemmatized_word = [lemmatizer.lemmatize(word, pos="v") for word in words]

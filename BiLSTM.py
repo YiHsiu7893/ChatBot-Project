@@ -1,15 +1,14 @@
 # Import Necessary Libraries
 import pandas as pd
-from PreProcessor import Preprocessing
 from collections import Counter
-
 from sklearn.model_selection import train_test_split
 import torch
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 from torch.optim import Adam
 
-from gensim.models import word2vec
+from PreProcessor import Preprocessing
+from Metrics import check_metrics
 
 
 # Hyperparameters
@@ -29,7 +28,6 @@ df["text"] = df["text"].apply(Preprocessing)
 
 # Label encoding
 diseases = df["label"].unique()
-# Dictionaries converting diseases to index and vice versa
 idx2dis = {k:v for k, v in enumerate(diseases)}
 dis2idx = {v:k for k, v in idx2dis.items()}
 
@@ -44,27 +42,12 @@ X_val.reset_index(drop=True, inplace=True)
 
 
 # Create a vocabulary list
-def build_vocab(texts):
-    # 統計詞頻
-    word_freq = Counter()
-    for text in texts:
-        word_freq.update(text)
-
-    # 根據詞頻排序
-    sorted_vocab = sorted(word_freq.items(), key = lambda x: x[1], reverse=True)
-
-    # 去除低詞頻
-    #vocab = [word for word, freq in sorted_vocab if freq>=min_freq]
-
-    vocab = {word: i+2 for i, (word, _) in enumerate(sorted_vocab)}
-    vocab["PAD"] = 0
-    vocab["UNK"] = 1
-
-    idx2word = {v:k for k, v in vocab.items()}
-
-    return vocab, idx2word
-
-vocab, idx2word = build_vocab(X_train)
+word_freq = Counter()
+for text in X_train:
+    word_freq.update(text)
+vocab = {word: i+2 for i, word in enumerate(word_freq)}
+vocab["PAD"] = 0
+vocab["UNK"] = 1
 
 
 # Create a PyTorch dataset
@@ -98,31 +81,6 @@ val_dataset = DiseaseDataset(X_val, y_val)
 # Create data loaders
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=batch_size)
-
-
-def check_accuracy(train_loader, val_loader, model):
-    model.eval()
-    train_correct = train_total = val_correct = val_total = 0
-
-    with torch.no_grad():
-        for x, y in train_loader:
-            x = x.squeeze(1)
-
-            _, predictions = model(x).max(1)
-            train_correct += (predictions == y).sum()
-            train_total += predictions.size(0)
-
-        for x, y in val_loader:
-            x = x.squeeze(1)
-
-            _, predictions = model(x).max(1)
-            val_correct += (predictions == y).sum()
-            val_total += predictions.size(0)
-
-    print(f"Train       Accuracy: {float(train_correct)/float(train_total)*100:.2f}%    ({train_correct}/{train_total})")
-    print(f"Validation  Accuracy: {float(val_correct)/float(val_total)*100:.2f}%    ({val_correct}/{val_total})")
-
-    model.train()
 
 
 # Define BiLSTM model
@@ -164,4 +122,4 @@ for epoch in range(num_epochs):
         optimizer.step()
 
     print("\n--- Epoch {} ---".format(epoch+1))
-    check_accuracy(train_loader, val_loader, model)
+    check_metrics(train_loader, val_loader, model, 1 if epoch+1==num_epochs else 0)

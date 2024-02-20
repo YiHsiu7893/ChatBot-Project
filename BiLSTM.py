@@ -9,6 +9,7 @@ from torch.optim import Adam
 
 from PreProcessor import Preprocessing
 from Metrics import check_metrics
+from Attention import attention_block
 
 
 # Hyperparameters
@@ -16,7 +17,7 @@ batch_size = 8
 embedding_dim = 256
 hidden_dim = 128
 num_layers = 2
-num_epochs = 10
+num_epochs = 5
 learning_rate = 0.001
 
 
@@ -83,7 +84,7 @@ train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=batch_size)
 
 
-# Define BiLSTM model
+"""### Original BiLSTM model (without Attention)
 class BiLSTM(nn.Module):
     def __init__(self, vocab_size, embedding_dim, hidden_dim, num_layers, num_classes):
         super(BiLSTM, self).__init__()
@@ -97,6 +98,25 @@ class BiLSTM(nn.Module):
         out = self.fc(out[:, -1, :])
 
         return out
+"""
+
+# Define BiLSTM model (with Attention)
+class BiLSTM(nn.Module):
+    def __init__(self, vocab_size, embedding_dim, hidden_dim, num_layers, num_classes):
+        super(BiLSTM, self).__init__()
+        self.embedding = nn.Embedding(vocab_size, embedding_dim)
+        self.lstm = nn.LSTM(embedding_dim, hidden_dim, num_layers, batch_first=True, bidirectional=True)
+        self.attention = attention_block(hidden_dim)
+        self.fc = nn.Linear(hidden_dim*2, num_classes)
+
+    def forward(self, x):
+        embedded = self.embedding(x)
+        output, _ = self.lstm(embedded)
+        att_out = self.attention(output)
+        out = self.fc(att_out)
+
+        return out
+   
     
 model = BiLSTM(len(vocab), embedding_dim, hidden_dim, num_layers, len(diseases))
 criterion = nn.CrossEntropyLoss()

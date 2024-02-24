@@ -10,6 +10,7 @@ from torch.optim import Adam
 from PreProcessor import Preprocessing
 from Metrics import check_metrics
 from Attention import attention_block
+from Linguistic_Extract import gpt_call
 
 
 # Hyperparameters
@@ -106,7 +107,7 @@ class BiLSTM(nn.Module):
         super(BiLSTM, self).__init__()
         self.embedding = nn.Embedding(vocab_size, embedding_dim)
         self.lstm = nn.LSTM(embedding_dim, hidden_dim, num_layers, batch_first=True, bidirectional=True)
-        self.attention = attention_block(hidden_dim)
+        self.attention = attention_block(hidden_dim*2)
         self.fc = nn.Linear(hidden_dim*2, num_classes)
 
     def forward(self, x):

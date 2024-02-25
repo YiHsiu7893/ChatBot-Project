@@ -3,7 +3,12 @@ from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 import contractions
 from nltk.tokenize import word_tokenize
+import nltk
 
+# pre download corpus
+#nltk.download('stopwords')
+#nltk.download('punkt')
+#nltk.download('wordnet')
 
 # Deal with contractions
 def en_contractions(text):

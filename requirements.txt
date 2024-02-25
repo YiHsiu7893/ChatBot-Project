@@ -1,0 +1,11 @@
+scikit-learn
+nltk
+contractions
+gensim
+torch
+requests
+numpy
+matplotlib
+pandas
+transformers
+

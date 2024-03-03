@@ -10,7 +10,7 @@ import numpy as np
 
 # Problem: every time call extraction, need to load these two pre-trained model or vector
 # which might be slow
-def extraction(text):
+def feat_extraction(text):
     # input is free text (string)
 
     # load NER pre-trained model
@@ -24,7 +24,7 @@ def extraction(text):
     ent2id = {'Age': 0, 'Personal_background': 1, 'Sex': 2, 'Sign_symptom': 3, 'Duration': 4, 'Clinical_event': 5, 'Nonbiological_location': 6, 'Diagnostic_procedure': 7, 'Biological_structure': 8, 'History': 9, 'Medication': 10, 'Family_history': 11, 'Lab_value': 12, 'Detailed_description': 13, 'Coreference': 14, 'Volume': 15, 'Disease_disorder': 16, 'Therapeutic_procedure': 17, 'AnnotatorNotes': 18, 'Dosage': 19, 'Date': 20, 'Color': 21, 'Texture': 22, 'Administration': 23, 'Time': 24, 'Severity': 25, 'Distance': 26, 'Shape': 27, 'Area': 28, 'Frequency': 29, 'Other_entity': 30, 'Other_event': 31, 'Subject': 32, 'Occupation': 33, 'Quantitative_concept': 34, 'Outcome': 35, 'Mass': 36, 'Height': 37, 'Weight': 38, 'Biological_attribute': 39, 'Activity': 40, 'Qualitative_concept': 41}
 
     # get pre-downloaded BioWordVec
-    w2v = KeyedVectors.load_word2vec_format('bio_embedding_extrinsic', binary=True)
+    w2v = KeyedVectors.load_word2vec_format('../bio_embedding_extrinsic', binary=True)
 
     def medical_NER(text):
         return pipe(text)
@@ -50,14 +50,14 @@ def extraction(text):
         for ner in ner_list:
             if ner['word'] in w2v:
                 vec = w2v[ner['word']]
-                vec = np.append(vec, ent2id[ner['entity_group']])
+                vec = np.append(ent2id[ner['entity_group']], vec)
                 vecs.append(vec)
                 #vecs = np.vstack((vecs, vec))
             else:
                 for tk in ner['word'].split():
                     if tk in w2v:
                         vec = w2v[tk]
-                        vec = np.append(vec, ent2id[ner['entity_group']])
+                        vec = np.append(ent2id[ner['entity_group']], vec)
                         vecs.append(vec)
                     else: # exception
                         print(ner)
@@ -67,5 +67,5 @@ def extraction(text):
         # print(vecs.shape)
         return vecs
 
-    return get_vec(subword_refactor(medical_NER(sent)))
-# Output dimension will be 201*#(tokens)
+    return get_vec(subword_refactor(medical_NER(text)))
+# Output dimension will be #(tokens)*201

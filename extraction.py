@@ -17,8 +17,6 @@ def feat_extraction(text):
     tokenizer = AutoTokenizer.from_pretrained("d4data/biomedical-ner-all")
     model = AutoModelForTokenClassification.from_pretrained("d4data/biomedical-ner-all")
 
-    # 83 labels (actually 41 entity)
-    # https://huggingface.co/d4data/biomedical-ner-all/blob/main/config.json
     pipe = pipeline("ner", model=model, tokenizer=tokenizer,  aggregation_strategy="simple") # pass device=0 if using gpu
 
     ent2id = {'Age': 0, 'Personal_background': 1, 'Sex': 2, 'Sign_symptom': 3, 'Duration': 4, 'Clinical_event': 5, 'Nonbiological_location': 6, 'Diagnostic_procedure': 7, 'Biological_structure': 8, 'History': 9, 'Medication': 10, 'Family_history': 11, 'Lab_value': 12, 'Detailed_description': 13, 'Coreference': 14, 'Volume': 15, 'Disease_disorder': 16, 'Therapeutic_procedure': 17, 'AnnotatorNotes': 18, 'Dosage': 19, 'Date': 20, 'Color': 21, 'Texture': 22, 'Administration': 23, 'Time': 24, 'Severity': 25, 'Distance': 26, 'Shape': 27, 'Area': 28, 'Frequency': 29, 'Other_entity': 30, 'Other_event': 31, 'Subject': 32, 'Occupation': 33, 'Quantitative_concept': 34, 'Outcome': 35, 'Mass': 36, 'Height': 37, 'Weight': 38, 'Biological_attribute': 39, 'Activity': 40, 'Qualitative_concept': 41}
@@ -64,7 +62,6 @@ def feat_extraction(text):
                         pass
 
         vecs = np.array(vecs)
-        # print(vecs.shape)
         return vecs
 
     return get_vec(subword_refactor(medical_NER(text)))

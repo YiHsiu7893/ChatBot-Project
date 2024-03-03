@@ -14,7 +14,7 @@ max_tokens = 100
 hidden_dim = 200
 
 
-w2v = KeyedVectors.load_word2vec_format('bio_embedding_extrinsic', binary=True)
+w2v = KeyedVectors.load_word2vec_format('../bio_embedding_extrinsic', binary=True)
 
 
 # To-Do: Define a more appropriate prompt template.

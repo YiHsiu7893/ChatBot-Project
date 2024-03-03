@@ -2,15 +2,15 @@
 import torch
 
 from PreProcessor import normal_preprocess
-from Model import BiLSTM
+from Model import BiLSTM_feat
 from Attention import attention_block
 from Linguistic_Extract import gpt_call
-
+from extraction import feat_extraction
 
 
 ### Input ###
-text = input("What symptoms are you experiencing?\n")
-#text = "I have a rash on my legs that is causing a lot of discomforts. It seems there is a cramp and I can see prominent veins on the calf. Also, I have been feeling very tired and fatigued in the past couple of days."
+#text = input("What symptoms are you experiencing?\n")
+text = "I have a rash on my legs that is causing a lot of discomforts. It seems there is a cramp and I can see prominent veins on the calf. Also, I have been feeling very tired and fatigued in the past couple of days."
 
 
 
@@ -37,12 +37,16 @@ num_layers = 2
 class_num = 17
 
 # Load pre-trained BiLSTM model
-model = BiLSTM(len(loaded_vocab), embedding_dim, hidden_dim, num_layers, class_num)
+model = BiLSTM_feat(len(loaded_vocab), embedding_dim, hidden_dim, num_layers, class_num)
 model.load_state_dict(torch.load('Weights/model.pth'))
 
 
 
-### Symptoms Feature Extraction Module ###
+### Feature Extraction Module ###
+# convert into tensor
+extract_vec = torch.from_numpy(feat_extraction(text))
+padding = torch.zeros((10, 256 - 201))
+extract_vec_pad = torch.cat((extract_vec, padding), dim=1)
 
 
 
@@ -63,7 +67,7 @@ print(att_out)
 
 # Testing II: Path 2
 x = torch.tensor(sent_indices).unsqueeze(0)
-probs = model(x)
+probs = model(x, extract_vec_pad)
 _, predictions = probs.max(1)
 
 idx2dis = torch.load('Weights/idx.pth')

@@ -2,6 +2,7 @@
 import torch
 
 from PreProcessor import normal_preprocess
+# from Model import BiLSTM
 from Model import BiLSTM_feat
 from Attention import attention_block
 from Linguistic_Extract import gpt_call
@@ -37,6 +38,7 @@ num_layers = 2
 class_num = 17
 
 # Load pre-trained BiLSTM model
+# model = BiLSTM(len(loaded_vocab), embedding_dim, hidden_dim, num_layers, class_num)
 model = BiLSTM_feat(len(loaded_vocab), embedding_dim, hidden_dim, num_layers, class_num)
 model.load_state_dict(torch.load('Weights/model.pth'))
 
@@ -59,7 +61,7 @@ attention2 = attention_block(hidden_dim)  # attention2: for path2 use
 ### Main ###
 # Testing I: Path 1
 embedded_out = gpt_call(text)
-#att_out = attention1(embedded_out)
+# att_out = attention1(embedded_out)
 att_out = attention1(embedded_out.unsqueeze(0))
 print("\npath 1 result:")
 print(att_out)
@@ -67,6 +69,7 @@ print(att_out)
 
 # Testing II: Path 2
 x = torch.tensor(sent_indices).unsqueeze(0)
+# probs = model(x)
 probs = model(x, extract_vec_pad)
 _, predictions = probs.max(1)
 

@@ -18,28 +18,30 @@ w2v = KeyedVectors.load_word2vec_format('../bio_embedding_extrinsic', binary=Tru
 
 
 # To-Do: Define a more appropriate prompt template.
-prompt_template = "Now, imagine yourself as a doctor.\
-\nThe patient is describing their symptoms.\
-Please extract the keywords of these symptoms and analyze the properties of time and the impact level.\
-\nThen, produce a description similar to \"Analysis\".\
-\n\nThe definitions are as follows:\
-\nKeyword Extraction: Extract keywords from the patient's description that may be related to specific diseases.\
-\nTime Description: Extract information related to the duration of symptom presentation, frequency of occurrence, and other time-related details.\
-\nImpact Assessment: Analyze the extent to which the symptoms described by the patient affect daily life, such as work ability, sleep quality, appetite, etc.\
-\nAdditionally, omit subject pronouns (e.g., I, he, the patient, etc.), and use an affirmative tone.\
-\n\
-\n\"Analysis\"\
-\n[keyword 1] persists for [time 1], and [keyword 2] persists for [time 2]... . These symptoms have [impact] on life.\
-\n\
-\n{patient description}"
-"""
-# template 修改方向:
-*1. 關鍵詞提取：從病患的敘述中提取關鍵詞，這些詞可能與特定的疾病相關。
-2. 情感分析：分析病患的語言中隱含的情感信息，如焦慮、憂鬱、痛苦等，這些情感可能與某些疾病有關。
-3. 疼痛描述：從病患的描述中提取與疼痛相關的信息，如疼痛的位置、程度、性質等。
-*4. 時間描述：提取描述症狀持續時間、發作頻率等時間相關信息。
-*5. 影響程度：分析病患敘述中症狀對日常生活的影響程度，如工作能力、睡眠品質、食慾等。
-"""
+prompt_template = "You are a professional doctor and you have many experiences about patients. The following is patients’ descriptions and corresponded output. Please do the same thing as it. Please be careful of the description like duration in (). I just need the output other description should be discarded.\
+\
+“I've been feeling really exhausted lately, like I can barely get out of bed in the mornings. It's been going on for a few weeks now, and no matter how much sleep I get, I still feel drained. I've also noticed that I'm bruising more easily than usual, even from minor bumps or scratches. My appetite has decreased too, and I've lost a bit of weight without trying. Sometimes I feel nauseous, and I've had some stomach pain as well. Oh, and I've been running a low-grade fever off and on. I'm not sure what's going on, but it's starting to worry me.” \
+[symptom] Exhaustion (a few weeks, despite sleep) \
+[symptom] Easy bruising \
+[symptom] Decreased appetite \
+[symptom] Unintentional weight loss \
+[symptom] Nausea (occasional) \
+[symptom] Stomach pain (occasional) \
+[symptom] Low-grade fever (occasional) \
+\
+“I've been experiencing a persistent cough for the past month or so. It started out as just a tickle in my throat, but now it's become quite frequent, especially at night. Along with the cough, I've noticed that I'm bringing up yellowish-green mucus. I also feel a tightness in my chest when I cough, and sometimes it even hurts. On top of that, I've been feeling really fatigued lately, like I can't keep up with my usual activities. I haven't had much of an appetite either, and I've lost a bit of weight unintentionally. Occasionally, I've had a low-grade fever, and I've been feeling generally achy all over. I'm concerned about what might be causing all of this.” \
+[symptom] Persistent cough (1 month, worsening at night) \
+[symptom] Yellowish-green mucus \
+[symptom] Chest tightness \
+[symptom] Chest pain (occasional) \
+[symptom] Fatigue \
+[symptom] Decreased appetite \
+[symptom] Unintentional weight loss \
+[symptom] Low-grade fever (occasional) \
+[symptom] Generalized body aches \
+\
+“I have a rash on my legs that is causing a lot of discomforts. It seems there is a cramp and I can see prominent veins on the calf. Also, I have been feeling very tired and fatigued in the past couple of days.” \
+"
 
 
 headers = {

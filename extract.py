@@ -10,7 +10,7 @@ import numpy as np
 
 # Problem: every time call extraction, need to load these two pre-trained model or vector
 # which might be slow
-def feat_extr(text):
+def feat_extr(text, entity_type = 'None'):
     # input is free text (string)
 
     # load NER pre-trained model
@@ -41,6 +41,18 @@ def feat_extr(text):
                 entity_list.pop(idx)
             idx += 1
         return entity_list
+    
+    # for extracting symptom to compare with over-the-counter drugs indication
+    def entity_extr(entity_list, entity_type):
+        ents = list()
+        if entity_type != 'None' and entity_type in ent2id:
+            for ent in entity_list:
+                if ent['entity_group'] == entity_type:
+                    ents.append(ent)
+        else:
+            print('Invalid entity type')
+            return 1
+        return ents
 
     def get_vec(ner_list):
         vecs = list()
@@ -60,18 +72,8 @@ def feat_extr(text):
                     else: # exception
                         print(ner)
                         pass
-
         vecs = np.array(vecs)
         return vecs
-
-    return get_vec(subword_refactor(medical_NER(text)))
+    
+    return get_vec(entity_extr(subword_refactor(medical_NER(text)), entity_type))
 # Output dimension will be #(tokens)*201
-
-# for extracting symptom to compare with over-the-counter drugs indication
-def symptom_extr(text):
-    entity_list = feat_extr.subword_refactor(feat_extr.medical_NER(text))
-    symptoms = list()
-    for ent in entity_list:
-        if ent['entity_group'] == 'Sign_symptom':
-            symptoms.append(ent['word'])
-    return symptoms

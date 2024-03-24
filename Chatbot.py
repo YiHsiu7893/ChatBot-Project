@@ -7,8 +7,6 @@ from Model import BiLSTM_feat
 from Attention import attention_block
 from Linguistic_Extract import gpt_call
 from extract import feat_extr
-# for over-the-counter drugs
-from extract import symptom_extr
 
 
 ### Input ###
@@ -48,8 +46,9 @@ model.load_state_dict(torch.load('Weights/model.pth'))
 
 ### Feature Extraction Module ###
 # convert into tensor
-extract_vec = torch.from_numpy(feat_extr(text))
-padding = torch.zeros((10, 256 - 201))
+extract_vec = torch.from_numpy(feat_extr(text, 'Sign_symptom'))
+# print(len(extract_vec))
+padding = torch.zeros((len(extract_vec), 256 - 201))
 extract_vec_pad = torch.cat((extract_vec, padding), dim=1)
 
 

@@ -10,7 +10,7 @@ import numpy as np
 
 # Problem: every time call extraction, need to load these two pre-trained model or vector
 # which might be slow
-def feat_extr(text, entity_type = 'None'):
+def feat_extr(text, entity_type = 'None', with_id = True, tokens = 7):
     # input is free text (string)
 
     # load NER pre-trained model
@@ -43,37 +43,49 @@ def feat_extr(text, entity_type = 'None'):
         return entity_list
     
     # for extracting symptom to compare with over-the-counter drugs indication
-    def entity_extr(entity_list, entity_type):
+    def entity_extr(entity_list, entity_type, tokens):
         ents = list()
         if entity_type != 'None' and entity_type in ent2id:
             for ent in entity_list:
                 if ent['entity_group'] == entity_type:
                     ents.append(ent)
+        elif entity_type == 'None':
+            for ent in entity_list:
+                ents.append(ent)
+                if len(ents) >= tokens:
+                    break
         else:
             print('Invalid entity type')
             return 1
         return ents
 
-    def get_vec(ner_list):
+    def get_vec(ner_list, with_id, tokens):
         vecs = list()
         # add entity info
         for ner in ner_list:
             if ner['word'] in w2v:
                 vec = w2v[ner['word']]
-                vec = np.append(ent2id[ner['entity_group']], vec)
+                if with_id:
+                    vec = np.append(ent2id[ner['entity_group']], vec)
                 vecs.append(vec)
                 #vecs = np.vstack((vecs, vec))
             else:
                 for tk in ner['word'].split():
                     if tk in w2v:
                         vec = w2v[tk]
-                        vec = np.append(ent2id[ner['entity_group']], vec)
+                        if with_id:
+                            vec = np.append(ent2id[ner['entity_group']], vec)
                         vecs.append(vec)
                     else: # exception
                         print(ner)
                         pass
+        while len(vecs) < tokens:
+            if with_id:
+                vecs.append(np.zeros(201))
+            else:
+                vecs.append(np.zeros(200))
         vecs = np.array(vecs)
         return vecs
     
-    return get_vec(entity_extr(subword_refactor(medical_NER(text)), entity_type))
+    return get_vec(entity_extr(subword_refactor(medical_NER(text)), entity_type, tokens), with_id, tokens)
 # Output dimension will be #(tokens)*201

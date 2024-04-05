@@ -46,7 +46,7 @@ model.load_state_dict(torch.load('Weights/model.pth'))
 
 ### Feature Extraction Module ###
 # convert into tensor
-extract_vec = torch.from_numpy(feat_extr(text, 'Sign_symptom'))
+extract_vec = torch.from_numpy(feat_extr(text, 'None', with_id = True, tokens = 7))
 # print(len(extract_vec))
 padding = torch.zeros((len(extract_vec), 256 - 201))
 extract_vec_pad = torch.cat((extract_vec, padding), dim=1)

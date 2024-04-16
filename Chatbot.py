@@ -7,6 +7,7 @@ from Model import BiLSTM_feat
 from Attention import attention_block
 from Linguistic_Extract import gpt_call
 from extract import feat_extr
+from otc_recmd import otc_recmd
 
 
 ### Input ###
@@ -77,3 +78,8 @@ _, predictions = probs.max(1)
 idx2dis = torch.load('Weights/idx.pth')
 print("\npath 2 result:")
 print(idx2dis[predictions.item()])
+
+otc = input("Do you want to see the OTC recommendations? (press y/Y to get recommendations, otherwise press any key)")
+if otc == 'y' or otc == 'Y':
+    otc_recmd(text)
+print("Thank you for using our service!")

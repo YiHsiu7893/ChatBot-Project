@@ -8,4 +8,6 @@ numpy==1.26.4
 matplotlib==3.8.3
 pandas==2.2.0
 transformers==4.38.1
+spacy==3.3.0 # for en-core-web-md
+# python -m spacy download en_core_web_md
 

@@ -1,12 +1,10 @@
 # Import Necessary Libraries
 import torch
 
-from PreProcessor import normal_preprocess
-# from Model import BiLSTM
-from Model import BiLSTM_feat
+from Tokenizers import general_tokenizer
+from Model import Path2_Module
 from Attention import attention_block
-from Linguistic_Extract import gpt_call
-from extract import feat_extr
+from Linguistic_Ext import gpt_call
 from otc_recmd import otc_recmd
 
 
@@ -17,7 +15,7 @@ text = "I have a rash on my legs that is causing a lot of discomforts. It seems 
 
 
 ### Pre-processing Module ###
-sent = normal_preprocess(text)
+sent = general_tokenizer(text)
 
 # Loaded vocabulary list
 loaded_vocab = torch.load('Weights/vocab.pth')
@@ -34,29 +32,28 @@ if len(sent_indices)<31:
 
 ### BiLSTM ###
 embedding_dim = 256
-hidden_dim = 128
+hidden_dim = 100
 num_layers = 2
 class_num = 17
 
 # Load pre-trained BiLSTM model
-# model = BiLSTM(len(loaded_vocab), embedding_dim, hidden_dim, num_layers, class_num)
-model = BiLSTM_feat(len(loaded_vocab), embedding_dim, hidden_dim, num_layers, class_num)
+model = Path2_Module(len(loaded_vocab), embedding_dim, hidden_dim, num_layers, class_num, 31) 
 model.load_state_dict(torch.load('Weights/model.pth'))
 
 
-
+"""
 ### Feature Extraction Module ###
 # convert into tensor
 extract_vec = torch.from_numpy(feat_extr(text, 'None', with_id = True, tokens = 7))
 # print(len(extract_vec))
 padding = torch.zeros((len(extract_vec), 256 - 201))
 extract_vec_pad = torch.cat((extract_vec, padding), dim=1)
+"""
 
 
 
 ### Attention ###
 attention1 = attention_block(200)         # attention1: for path1 use (GPT output)
-attention2 = attention_block(hidden_dim)  # attention2: for path2 use
 
 
 
@@ -64,15 +61,15 @@ attention2 = attention_block(hidden_dim)  # attention2: for path2 use
 # Testing I: Path 1
 embedded_out = gpt_call(text)
 # att_out = attention1(embedded_out)
-att_out = attention1(embedded_out.unsqueeze(0))
+att_out = attention1(embedded_out.double().unsqueeze(0))
 print("\npath 1 result:")
 print(att_out)
 
 
 # Testing II: Path 2
 x = torch.tensor(sent_indices).unsqueeze(0)
-# probs = model(x)
-probs = model(x, extract_vec_pad)
+text = [text]
+probs = model.run(x, text, None, 'test')
 _, predictions = probs.max(1)
 
 idx2dis = torch.load('Weights/idx.pth')

@@ -19,7 +19,7 @@ lemmatizer = WordNetLemmatizer()
 
 
 # 1: Normal Pre-Processing Module
-def normal_preprocess(sent):
+def general_tokenizer(sent):
     sent = en_contractions(sent)
 
     # Remove punctuations
@@ -32,12 +32,11 @@ def normal_preprocess(sent):
     # Lemmatization
     lemmatized_word = [lemmatizer.lemmatize(word, pos="v") for word in words]
 
-    #return " ".join(lemmatized_word)
     return lemmatized_word
 
 
 # 2: Word2Vec Pre-Processing Module
-def w2v_preprocess(sent):
+def w2v_tokenizer(sent):
     sent = en_contractions(sent)
 
     # Remove punctuations

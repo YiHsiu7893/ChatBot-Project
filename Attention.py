@@ -8,8 +8,8 @@ import torch.nn.functional as F
 class attention_block(nn.Module):
     def __init__(self, hidden_dim):
         super(attention_block, self).__init__()
-        self.w_omega = nn.Parameter(torch.Tensor(hidden_dim, hidden_dim))
-        self.u_omega = nn.Parameter(torch.Tensor(hidden_dim, 1))
+        self.w_omega = nn.Parameter(torch.Tensor(hidden_dim, hidden_dim).double())
+        self.u_omega = nn.Parameter(torch.Tensor(hidden_dim, 1).double())
 
         nn.init.uniform_(self.w_omega, -0.1, 0.1)
         nn.init.uniform_(self.u_omega, -0.1, 0.1)

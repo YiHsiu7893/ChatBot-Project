@@ -3,28 +3,24 @@ import pandas as pd
 from collections import Counter
 from sklearn.model_selection import train_test_split
 import torch
-import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
-from torch.optim import Adam
 
-from Model import BiLSTM
-from PreProcessor import normal_preprocess
+from Model import Path2_Module
+from Tokenizers import general_tokenizer
 from Metrics import check_metrics
 
 
 # Hyperparameters
 batch_size = 8
 embedding_dim = 256
-hidden_dim = 128
+hidden_dim = 100
 num_layers = 2
 num_epochs = 5
-learning_rate = 0.001
 
 
 # Read data
 df = pd.read_csv("Symptom2Disease.csv")
 df.drop("Unnamed: 0", inplace=True, axis=1)
-df["text"] = df["text"].apply(normal_preprocess)
 
 
 # Label encoding
@@ -41,6 +37,11 @@ X_train, X_val, y_train, y_val = train_test_split(df["text"], df["label"], test_
 X_train.reset_index(drop=True, inplace=True)
 X_val.reset_index(drop=True, inplace=True)
 
+X_train_ori = X_train
+X_train = X_train.apply(general_tokenizer)
+X_val_ori = X_val
+X_val = X_val.apply(general_tokenizer)
+
 
 # Create a vocabulary list
 word_freq = Counter()
@@ -55,13 +56,15 @@ vocab["UNK"] = 1
 max_words = X_train.apply(len).max()    #31
 
 class DiseaseDataset(Dataset):
-    def __init__(self, symptoms, labels):
+    def __init__(self, symptoms, descriptions, labels):
         self.symptoms = symptoms
+        self.descriptions = descriptions
         self.labels = torch.tensor(labels.to_numpy())
     def __len__(self):
         return len(self.labels)
     def __getitem__(self, idx):
         text = self.symptoms[idx]
+        des = self.descriptions[idx]
         label = self.labels[idx]
 
         # Convert the text to a sequence of word indices
@@ -72,44 +75,31 @@ class DiseaseDataset(Dataset):
         if len(text_indices)<max_words:
             text_indices = text_indices+[0]*(max_words-len(text_indices))
 
-        return torch.tensor(text_indices), label
+        return torch.tensor(text_indices), des, label
     
 
 # Instantiate dataset objects
-train_dataset = DiseaseDataset(X_train, y_train)
-val_dataset = DiseaseDataset(X_val, y_val)
+train_dataset = DiseaseDataset(X_train, X_train_ori, y_train)
+val_dataset = DiseaseDataset(X_val, X_val_ori, y_val)
 
 # Create data loaders
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=batch_size)
 
-    
-model = BiLSTM(len(vocab), embedding_dim, hidden_dim, num_layers, len(diseases))
-criterion = nn.CrossEntropyLoss()
-optimizer = Adam(model.parameters(), lr=learning_rate)
+
+module = Path2_Module(len(vocab),  embedding_dim, hidden_dim, num_layers, len(diseases), max_words) 
 
 
 # Training
 for epoch in range(num_epochs):
-    model.train()
-
-    for inputs, labels in train_loader:
-        inputs = inputs.squeeze(1)
-
-        # forward
-        outputs = model(inputs)
-        loss = criterion(outputs, labels)
-
-        # backward
-        optimizer.zero_grad()
-        loss.backward()
-
-        # gradient descent or adam step
-        optimizer.step()
-
     print("\n--- Epoch {} ---".format(epoch+1))
-    check_metrics(train_loader, val_loader, model, 1 if epoch+1==num_epochs else 0)
 
-torch.save(model.state_dict(), 'model.pth')
+    module.b_model.train()
+    for inputs, texts, labels in train_loader:
+        module.run(inputs, texts, labels, 'train')
+    
+    check_metrics(train_loader, val_loader, module, 1 if epoch+1==num_epochs else 0)
+
+torch.save(module.state_dict(), 'model.pth')
 torch.save(vocab, 'vocab.pth')
 torch.save(idx2dis, 'idx.pth')

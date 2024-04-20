@@ -1,82 +1,99 @@
-### Incomplete!!
-import requests
-import torch
+## Import necessary libraries.
+#from langchain.document_loaders import CSVLoader
+from langchain_community.document_loaders import CSVLoader
+from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_community.vectorstores import Chroma
+from langchain_community.llms import LlamaCpp
 
-from gensim.models import KeyedVectors
-from PreProcessor import w2v_preprocess
-
-
-# To-Do: These hyperparameters are undecided.
-api_endpoint = "https://api.openai.com/v1/completions"
-api_key = "OPENAI_API_KEY"
-gpt_model = "text-davinci-003"
-max_tokens = 100
-hidden_dim = 200
+# Load .csv document.
+loader = CSVLoader("./Symptom2Disease.csv", encoding="windows-1252")
+documents = loader.load()
 
 
-w2v = KeyedVectors.load_word2vec_format('../bio_embedding_extrinsic', binary=True)
+# Embedding model.
+embeddings = HuggingFaceEmbeddings(model_name="BAAI/bge-base-en-v1.5")
+
+# Convert documents into vector representations.
+vectorstore = Chroma.from_documents(documents, embeddings)
+
+# Retriever.
+retriever = vectorstore.as_retriever(search_kwargs={'k': 5})
 
 
-# To-Do: Define a more appropriate prompt template.
-prompt_template = "You are a professional doctor and you have many experiences about patients. The following is patients’ descriptions and corresponded output. Please do the same thing as it. Please be careful of the description like duration in (). I just need the output other description should be discarded.\
-\
-“I've been feeling really exhausted lately, like I can barely get out of bed in the mornings. It's been going on for a few weeks now, and no matter how much sleep I get, I still feel drained. I've also noticed that I'm bruising more easily than usual, even from minor bumps or scratches. My appetite has decreased too, and I've lost a bit of weight without trying. Sometimes I feel nauseous, and I've had some stomach pain as well. Oh, and I've been running a low-grade fever off and on. I'm not sure what's going on, but it's starting to worry me.” \
-[symptom] Exhaustion (a few weeks, despite sleep) \
-[symptom] Easy bruising \
-[symptom] Decreased appetite \
-[symptom] Unintentional weight loss \
-[symptom] Nausea (occasional) \
-[symptom] Stomach pain (occasional) \
-[symptom] Low-grade fever (occasional) \
-\
-“I've been experiencing a persistent cough for the past month or so. It started out as just a tickle in my throat, but now it's become quite frequent, especially at night. Along with the cough, I've noticed that I'm bringing up yellowish-green mucus. I also feel a tightness in my chest when I cough, and sometimes it even hurts. On top of that, I've been feeling really fatigued lately, like I can't keep up with my usual activities. I haven't had much of an appetite either, and I've lost a bit of weight unintentionally. Occasionally, I've had a low-grade fever, and I've been feeling generally achy all over. I'm concerned about what might be causing all of this.” \
-[symptom] Persistent cough (1 month, worsening at night) \
-[symptom] Yellowish-green mucus \
-[symptom] Chest tightness \
-[symptom] Chest pain (occasional) \
-[symptom] Fatigue \
-[symptom] Decreased appetite \
-[symptom] Unintentional weight loss \
-[symptom] Low-grade fever (occasional) \
-[symptom] Generalized body aches \
-\
-“I have a rash on my legs that is causing a lot of discomforts. It seems there is a cramp and I can see prominent veins on the calf. Also, I have been feeling very tired and fatigued in the past couple of days.” \
-"
+# Instantiate the LlamaCpp language model.
+llm = LlamaCpp(
+    model_path= "D:/Downloads/BioMistral-7B.Q4_K_M.gguf",
+    temperature=0.3,
+    max_tokens=2048,
+    top_p=1,
+    verbose=False)
 
 
-headers = {
-    "Content-Type": "text/plain",
-    "Authorization": f"Bearer {api_key}"
-}
+# Import necessary libraries.
+from langchain.schema.runnable import RunnablePassthrough
+from langchain.schema.output_parser import StrOutputParser
+from langchain.prompts import ChatPromptTemplate
 
 
-def gpt_call(input):
-    input_text = prompt_template.format(**{"patient description": input})
-    data = {
-    "model": gpt_model,   
-    "prompt": input_text,          
-    "max_tokens": max_tokens            
-    }
+feature_list = []
+with open('./features.txt', 'r') as file:
+    for line in file:
+        line = line.strip()
+        feature_list.append(line)
 
-    #response = requests.post(api_endpoint, headers=headers, json=data)
-    #out = Preprocessing(response.text)
-    out = w2v_preprocess(input)
+# Define prompt template.
+template = """
+<|context|>
+Give a score that is only one number between 0 and 1.\n
+The score number must be an decimals.\n
+This is the rule of answer: 0-0.2 is mild or none, 0.3-0.6 is moderate, and above 0.7 is severe.\n
+</s>
+<|user|>
+This is a patient‘s description:\n
+---------------------\n
+{query}
+</s>
+ <|assistant|>
+"""
 
-    embedded_out = torch.empty((len(out), hidden_dim), dtype=torch.float32)
-    for i, word in enumerate(out):
-        embedded_out[i] = torch.tensor(w2v[word])
+rag_chain = (
+    {"context": retriever,  "query": RunnablePassthrough()}
+    | ChatPromptTemplate.from_template(template)
+    | llm
+    | StrOutputParser()
+)
 
 
-    print("\n--- just a test for successfully running gpt_call ---\nreceiving sentence is:")
-    print(input)
+def llm_call(sent):
+    scores = []
+    queries = []
 
-    return embedded_out
+    for f in feature_list:
+        q = sent
+        q += "\nGiven the information, you are a helpful health consultant.\n"
+        q += f'Answer the question: Does the person described in the case have {f}? Do you think it is serious?'
+        q += "Your answer must be a number. For example, 0.5."
+
+        queries.append(q)
+
+
+    for i in range(len(queries)):
+        """
+        # Generate response.
+        response = rag_chain.invoke(queries[i])
+        print(response)
+        """
+
+        #scores.append(response)
+        scores.append(0)
+
+    return scores
 
 
 """
-# for 測試用
-sent = "I have been experiencing a skin rash on my arms, legs, and torso for the past few weeks. It is red, itchy, and covered in dry, scaly patches."
-result = gpt_call(sent)
-print(result)
-print(result.shape)
+Idea:
+1. 從targets產生features (目前直接用現成的features)
+2. 對每個feature，問"有這個症狀嗎?嚴重度?"，並retrieve from baseknowledge(目前是Symptom2Disease。可能需要另外自備?)
+3. RAG問LLM，得到score array
+4. Concatenate with other parts (done in Models.py Process_Module)
 """

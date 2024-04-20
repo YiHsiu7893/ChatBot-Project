@@ -64,6 +64,7 @@ rag_chain = (
 )
 
 
+# Get a list of scores using RAG
 def llm_call(sent):
     scores = []
     queries = []

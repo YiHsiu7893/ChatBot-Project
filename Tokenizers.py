@@ -3,7 +3,6 @@ from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 import contractions
 from nltk.tokenize import word_tokenize
-from transformers import AutoTokenizer
 
 
 # Deal with contractions
@@ -19,7 +18,7 @@ lemmatizer = WordNetLemmatizer()
 
 
 # 1: Normal Pre-Processing Module
-def general_tokenizer(sent):
+def tokenizer(sent):
     sent = en_contractions(sent)
 
     # Remove punctuations
@@ -33,25 +32,3 @@ def general_tokenizer(sent):
     lemmatized_word = [lemmatizer.lemmatize(word, pos="v") for word in words]
 
     return lemmatized_word
-
-
-# 2: Word2Vec Pre-Processing Module
-def w2v_tokenizer(sent):
-    sent = en_contractions(sent)
-
-    # Remove punctuations
-    sent = sent.translate(str.maketrans('', '', string.punctuation)).strip()
-
-    # Tokenize
-    tokenizer = AutoTokenizer.from_pretrained("d4data/biomedical-ner-all")
-    tokenized_sent = [tokenizer.decode(word) for word in tokenizer(sent)["input_ids"]][1:-1]
-
-    idx = 0
-    while idx < len(tokenized_sent):
-        while idx < len(tokenized_sent) and tokenized_sent[idx][0] == '#':
-            if len(tokenized_sent[idx].split('##')) > 1:
-                    tokenized_sent[idx-1] = tokenized_sent[idx-1] + tokenized_sent[idx].split('##')[1]
-            tokenized_sent.pop(idx)
-        idx += 1
-
-    return tokenized_sent

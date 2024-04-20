@@ -1,9 +1,11 @@
 import torch.nn as nn
 import torch
+import numpy as np
 
 from sklearn.svm import SVC
 from torch.optim import Adam
-from Feature_Ext import Extractors
+from Feature_Ext import feat_extr
+from Linguistic_Ext import llm_call
 from Attention import attention_block
 
 ### BiLSTM model
@@ -32,10 +34,10 @@ class SVM(nn.Module):
         return self.model.predict(x)
     
 
-# Module: (BiLSTM + Feature Extraction + Attention)
-class Path2_Module(nn.Module):
+# Process Module: (BiLSTM + Feature Extraction + Attention + LLM)
+class Process_Module(nn.Module):
     def __init__(self, vocab_size, embedding_dim, hidden_dim, num_layers, num_classes, max_words):
-        super(Path2_Module, self).__init__()
+        super(Process_Module, self).__init__()
 
         learning_rate = 0.001
         self.max_words = max_words
@@ -43,9 +45,8 @@ class Path2_Module(nn.Module):
         self.b_model = BiLSTM(vocab_size, embedding_dim, hidden_dim, num_layers)
         self.criterion = nn.CrossEntropyLoss()
         self.optimizer = Adam(self.b_model.parameters(), lr=learning_rate)
-        self.fe_module = Extractors()
         self.attention = attention_block(201)
-        self.classifier = nn.Linear(201, num_classes, dtype=torch.double)
+        self.classifier = nn.Linear(283, num_classes, dtype=torch.double)
 
 
     def run(self, inputs, texts, labels, mode):
@@ -61,16 +62,26 @@ class Path2_Module(nn.Module):
             # Feature Extraction output
             extract_vecs = []
             for text in texts:
-                extract_vec = torch.from_numpy(self.fe_module.feat_extr(text))
+                extract_vec = torch.from_numpy(feat_extr(text))
                 extract_vecs.append(extract_vec)
             extract_vecs = torch.stack(extract_vecs)
             
             # Concatenate the two outputs
             concate_tensor = torch.cat((b_out, extract_vecs), dim=1) #shape = (8, 38, 201)
+            # Attention output
+            att_out = self.attention(concate_tensor)  #shape = (8, 201)
 
-            # Attention and Classifier output
-            att_out = self.attention(concate_tensor)  # float or double?
-            outputs = self.classifier(att_out)
+            # LLM output
+            feature_scores = []
+            for text in texts:
+                score = llm_call(text)
+                feature_scores.append(score)
+            feature_scores = np.array(feature_scores)
+            feature_scores = torch.from_numpy(feature_scores)
+
+            # Concatenate information from two paths, and provide it to the classifier
+            input = torch.cat((att_out, feature_scores), dim=1)
+            outputs = self.classifier(input)
 
             if mode == 'train':
                 loss = self.criterion(outputs, labels)

@@ -5,8 +5,8 @@ from sklearn.model_selection import train_test_split
 import torch
 from torch.utils.data import Dataset, DataLoader
 
-from Model import Path2_Module
-from Tokenizers import general_tokenizer
+from Models import Process_Module
+from Tokenizers import tokenizer
 from Metrics import check_metrics
 
 
@@ -15,7 +15,7 @@ batch_size = 8
 embedding_dim = 256
 hidden_dim = 100
 num_layers = 2
-num_epochs = 5
+num_epochs = 2
 
 
 # Read data
@@ -38,9 +38,9 @@ X_train.reset_index(drop=True, inplace=True)
 X_val.reset_index(drop=True, inplace=True)
 
 X_train_ori = X_train
-X_train = X_train.apply(general_tokenizer)
+X_train = X_train.apply(tokenizer)
 X_val_ori = X_val
-X_val = X_val.apply(general_tokenizer)
+X_val = X_val.apply(tokenizer)
 
 
 # Create a vocabulary list
@@ -87,7 +87,7 @@ train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=batch_size)
 
 
-module = Path2_Module(len(vocab),  embedding_dim, hidden_dim, num_layers, len(diseases), max_words) 
+module = Process_Module(len(vocab),  embedding_dim, hidden_dim, num_layers, len(diseases), max_words) 
 
 
 # Training
@@ -99,6 +99,7 @@ for epoch in range(num_epochs):
         module.run(inputs, texts, labels, 'train')
     
     check_metrics(train_loader, val_loader, module, 1 if epoch+1==num_epochs else 0)
+
 
 torch.save(module.state_dict(), 'model.pth')
 torch.save(vocab, 'vocab.pth')

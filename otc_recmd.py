@@ -1,25 +1,23 @@
 import pandas as pd
-import spacy
-import numpy as np
+from sentence_transformers import SentenceTransformer, util
 
 def otc_recmd(text):
-    nlp = spacy.load("en_core_web_md")
+    model = SentenceTransformer('distilbert-base-nli-mean-tokens')
+    #nlp = spacy.load("en_core_web_md")
 
     # Load data (length 362)
     sample = pd.read_csv("OTC.csv")
     otcs = sample["中文品名"]
     idcs = sample["Indications"]
 
+    idc_vecs = model.encode(idcs)
+
     simi = list()
 
-    inp = nlp(text)
+    inp = model.encode(text)
     idx = 0
-    for idc in idcs:
-        idc_vec = nlp(idc)
-        if(idc_vec and idc_vec.vector_norm):
-            simi.append((idx, inp.similarity(idc_vec)))
-        else:
-            simi.append((idx, 0))
+    for idc_vec in idc_vecs:
+        simi.append((idx, util.pytorch_cos_sim(inp, idc_vec)[0][0]))
         idx += 1
 
     # def a(x):
@@ -29,4 +27,6 @@ def otc_recmd(text):
 
     print("Top 5 OTC recommendations:")
     for i in range(5):
-        print(otcs[simi[i][0]], simi[i][1])
+        print(otcs[simi[i][0]], simi[i][1].item())
+
+# otc_recmd("I have a sore throat and keep coughing. I feel my throat is very dry and I have a fever.")

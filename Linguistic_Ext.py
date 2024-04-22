@@ -3,7 +3,7 @@
 from langchain_community.document_loaders import CSVLoader
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import Chroma
-from langchain_community.llms import LlamaCpp
+from langchain_community.llms.llamacpp import LlamaCpp
 
 # Load .csv document.
 loader = CSVLoader("./Symptom2Disease.csv", encoding="windows-1252")
@@ -41,19 +41,20 @@ with open('./features.txt', 'r') as file:
         line = line.strip()
         feature_list.append(line)
 
+
 # Define prompt template.
 template = """
 <|context|>
-Give a score that is only one number between 0 and 1.\n
-The score number must be an decimals.\n
-This is the rule of answer: 0-0.2 is mild or none, 0.3-0.6 is moderate, and above 0.7 is severe.\n
+You are a helpful health scorer.\n
+After hearing the patient's description below, give me a number between 0 and 1.\n
+This is the rule of score: 0-0.2 is mild or none, 0.3-0.6 is moderate, and 0.7-1.0 is severe.\n\n
+This is a patient's description:\n
+---------------------\n
 </s>
 <|user|>
-This is a patient‘s description:\n
----------------------\n
 {query}
 </s>
- <|assistant|>
+<|assistant|>
 """
 
 rag_chain = (
@@ -64,37 +65,48 @@ rag_chain = (
 )
 
 
-# Get a list of scores using RAG
 def llm_call(sent):
     scores = []
     queries = []
 
     for f in feature_list:
         q = sent
-        q += "\nGiven the information, you are a helpful health consultant.\n"
-        q += f'Answer the question: Does the person described in the case have {f}? Do you think it is serious?'
-        q += "Your answer must be a number. For example, 0.5."
+        q += "\n---------------------\n"
+        q += f"If you are asked to give a score that represents the patient's severity of \"{f}\", how much will you give?"
 
         queries.append(q)
 
 
     for i in range(len(queries)):
-        """
         # Generate response.
         response = rag_chain.invoke(queries[i])
-        print(response)
-        """
+        #print(response)
 
-        #scores.append(response)
-        scores.append(0)
+        score = extract_score(response)
+        
+        scores.append(score)
+        #scores.append(0)
 
     return scores
 
 
+# Extract numbers from LLaMA's response(text)
+import re
+def extract_score(string):
+    #number = re.findall(r'\d+\.\d+|\d+', string)
+    number = re.findall(r'\d+\.\d+', string)
+    if number:
+        for i in number:
+            return float(i)
+    else:
+        return 0.0
 """
 Idea:
 1. 從targets產生features (目前直接用現成的features)
 2. 對每個feature，問"有這個症狀嗎?嚴重度?"，並retrieve from baseknowledge(目前是Symptom2Disease。可能需要另外自備?)
 3. RAG問LLM，得到score array
-4. Concatenate with other parts (done in Models.py Process_Module)
+4. Concatenate with other parts (in Models.py Process_Module)
 """
+
+#scores = llm_call("I have a rash on my legs that is causing a lot of discomforts. It seems there is a cramp and I can see prominent veins on the calf. Also, I have been feeling very tired and fatigued in the past couple of days.")
+#print("score:", scores)

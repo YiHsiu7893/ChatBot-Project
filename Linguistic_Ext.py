@@ -1,14 +1,20 @@
 ## Import necessary libraries.
-#from langchain.document_loaders import CSVLoader
-from langchain_community.document_loaders import CSVLoader
+from langchain_community.document_loaders import PyPDFDirectoryLoader
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import Chroma
 from langchain_community.llms.llamacpp import LlamaCpp
 
-# Load .csv document.
-loader = CSVLoader("./Symptom2Disease.csv", encoding="windows-1252")
-documents = loader.load()
 
+# Load .pdf document.
+loader = PyPDFDirectoryLoader("./Knowledge_base")
+documents = loader.load()
+#print(documents)
+
+# Split the whole document into several chunks.
+text_splitter = RecursiveCharacterTextSplitter(chunk_size=300, chunk_overlap=50)
+chunks = text_splitter.split_documents(documents)
+#print(chunks[0])
 
 # Embedding model.
 embeddings = HuggingFaceEmbeddings(model_name="BAAI/bge-base-en-v1.5")
@@ -17,7 +23,7 @@ embeddings = HuggingFaceEmbeddings(model_name="BAAI/bge-base-en-v1.5")
 vectorstore = Chroma.from_documents(documents, embeddings)
 
 # Retriever.
-retriever = vectorstore.as_retriever(search_kwargs={'k': 5})
+retriever = vectorstore.as_retriever(search_kwargs={'k': 1})
 
 
 # Instantiate the LlamaCpp language model.
@@ -33,13 +39,6 @@ llm = LlamaCpp(
 from langchain.schema.runnable import RunnablePassthrough
 from langchain.schema.output_parser import StrOutputParser
 from langchain.prompts import ChatPromptTemplate
-
-
-feature_list = []
-with open('./features.txt', 'r') as file:
-    for line in file:
-        line = line.strip()
-        feature_list.append(line)
 
 
 # Define prompt template.
@@ -65,14 +64,21 @@ rag_chain = (
 )
 
 
-def llm_call(sent):
-    scores = []
-    queries = []
+target_list = []
+with open('./Knowledge_base/targets.txt', 'r') as file:
+    for line in file:
+        line = line.strip()
+        target_list.append(line)
 
-    for f in feature_list:
+# A function to call for LLM
+def llm_call(sent):
+    queries = []
+    scores = []
+
+    for f in target_list:
         q = sent
         q += "\n---------------------\n"
-        q += f"If you are asked to give a score that represents the patient's severity of \"{f}\", how much will you give?"
+        q += f"If you are asked to give a score to rate the severity of the patient's {f}, how much would you give?"
 
         queries.append(q)
 
@@ -80,26 +86,25 @@ def llm_call(sent):
     for i in range(len(queries)):
         # Generate response.
         response = rag_chain.invoke(queries[i])
-        #print(response)
+        #print("\n", response)
 
         score = extract_score(response)
         
         scores.append(score)
-        #scores.append(0)
 
     return scores
 
 
-# Extract numbers from LLaMA's response(text)
+# Extract numbers from LLaMA's response (text)
 import re
 def extract_score(string):
-    #number = re.findall(r'\d+\.\d+|\d+', string)
     number = re.findall(r'\d+\.\d+', string)
     if number:
         for i in number:
             return float(i)
     else:
         return 0.0
+
 """
 Idea:
 1. 從targets產生features (目前直接用現成的features)

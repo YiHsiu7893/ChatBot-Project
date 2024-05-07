@@ -51,9 +51,12 @@ def otc_recmd(text):
 
     # Show the result
     print("Top 5 OTC recommendations:")
+    results = ""
     for i in range(5):
         if simi[i][1].item()>0.825:
-            print(otcs[simi[i][0]], simi[i][1].item(), "\n", idcs_zh[simi[i][0]])
+            results += otcs[simi[i][0]] + ", " + str(simi[i][1].item()) + "\n" + idcs_zh[simi[i][0]] + "\n"
+            # print(otcs[simi[i][0]], simi[i][1].item(), "\n", idcs_zh[simi[i][0]])
+    return results
     
 
 #otc_recmd("I have a sore throat and keep coughing. I feel my throat is very dry and I have a fever.")

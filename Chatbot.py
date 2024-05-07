@@ -8,8 +8,7 @@ from otc_recmd import otc_recmd
 
 ### Input ###
 #text = input("What symptoms are you experiencing?\n")
-text = "I have a rash on my legs that is causing a lot of discomforts. It seems there is a cramp and I can see prominent veins on the calf. Also, I have been feeling very tired and fatigued in the past couple of days."
-    
+text = "I have a rash on my legs that is causing a lot of discomforts. It seems there is a cramp and I can see prominent veins on the calf. Also, I have been feeling very tired and fatigued in the past couple of days." 
 
 
 ### Process Module ###
@@ -44,8 +43,8 @@ model.load_state_dict(torch.load('Weights/model.pth'))
 ### Main ###
 # Make a prediction
 x = torch.tensor(sent_indices).unsqueeze(0)
-text = [text]
-probs = model.run(x, text, None, 'test')
+text_list = [text]
+probs = model.run(x, text_list, None, 'test')
 _, predictions = probs.max(1)
 
 idx2dis = torch.load('Weights/idx.pth')

@@ -35,7 +35,6 @@ def main(text):
     model.load_state_dict(torch.load('Weights/model.pth'))
 
 
-
     ### Main ###
     # Make a prediction
     x = torch.tensor(sent_indices).unsqueeze(0)

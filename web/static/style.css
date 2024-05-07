@@ -1,0 +1,10 @@
+textarea {
+    height: 200px;
+    width: 400px;
+    font-size: 14pt;
+    size: 60px;
+}
+
+.feedback, .drug_div, .ans, .select {
+    display: none;
+}

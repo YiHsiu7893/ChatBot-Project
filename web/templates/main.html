@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project Demo</title>
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  <script>
+    $(document).ready(function(){
+      $('#send_input').click(function(){
+        var input = $('#user_input').val();
+        $.ajax({
+          method: "POST",
+          url: "/func",
+          data: { user_input: input}
+        })
+        .done(function( msg ) {
+          $('.input').hide();
+          $('#response').html(msg);
+          $('.ans').show();
+          $('.select').show();
+        });
+      });
+
+      $('#opt').click(function(){
+        var option = $('input[name=option]:checked').val();
+        var input = $('#user_input').val();
+        $.ajax({
+          method: "POST",
+          url: "/drugs",
+          data: { option: option, user_input: input}
+        })
+        .done(function( msg ) {
+          if (option == 'yes') {
+            $('#drugs').html(msg);
+            $('.drug_div').show();
+          }
+          $('.select').hide();
+          $('.feedback').show();
+        });
+      });
+    });
+  </script>
+</head>
+<body>
+  <div class="input">
+    <textarea name="user_input" id="user_input" placeholder="Type your situation here in English"></textarea>
+    <input type="submit" id="send_input" value="Send">
+  </div>
+
+  <div class="ans">
+    <p>
+      The possible disease you have is
+      <strong id="response"></strong>.
+    </p><br>
+  </div>
+
+  <div class="select">
+    <label for="option">
+      Do you want to get information about disease-related over-the-counter drugs?
+    </label><br>
+    <input type="radio" name="option" value="yes">Yes
+    <input type="radio" name="option" value="no" checked>No
+    <input type="submit" value="Submit" id="opt">
+  </div>
+  <hr>
+
+  <div class="drug_div">
+    <p>
+      Top 5 OTC recommendations:<br>
+      <ol id="drugs">
+      </ol>
+    </p><hr>
+  </div>
+
+  <div class="feedback">
+    <p>
+      <strong>Thank you for using our service!</strong>
+    </p>
+  </div>
+  
+</body>
+</html>

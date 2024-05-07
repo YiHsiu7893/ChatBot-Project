@@ -3,7 +3,7 @@ import torch
 
 from Tokenizers import tokenizer
 from Models import Process_Module
-from otc_recmd import otc_recmd
+from Recommender import otc_recmd
 
 
 ### Input ###

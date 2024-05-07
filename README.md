@@ -9,7 +9,7 @@ Then, run `python -W ignore Chatbot.py` to start.
 <img src="https://github.com/YiHsiu7893/ChatBot-Project/blob/main/images/architecture.jpg" width=70% height=70%>
 
 
-## extraction.py
+## Feature_Ext.py
 Use pre-trained model and vector, biomedical-ner-all and BioWordVec.
 * https://huggingface.co/d4data/biomedical-ner-all
 * https://github.com/ncbi-nlp/BioWordVec

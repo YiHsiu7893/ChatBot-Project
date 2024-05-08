@@ -1,7 +1,9 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, jsonify
 import Chatbot
 
 app = Flask(__name__, template_folder='web/templates', static_folder='web/static')
+app.config['JSON_AS_ASCII'] = False
+app.config['JSONIFY_MIMETYPE'] = "application/json;charset=utf-8"
 
 @app.route('/main', methods=['GET'])
 def show_main():
@@ -23,11 +25,12 @@ def run_otc():
         input = request.values['user_input']
         if option == 'yes':
             result = Chatbot.otc_recmd(input).split('\n')
-
-            drugs = ""
+            
+            drugs = dict()
             for i in range(len(result)):
-                drugs += "<li>" + result[i] + "</li>"
-            return drugs
+                if result[i] != '':
+                    drugs[i+1] = result[i]
+            return jsonify(drugs)
         else:
             return ''
     

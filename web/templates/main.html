@@ -8,77 +8,96 @@
 
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
   <script>
+    const createChatLi = (message, className) => {
+      const chatLi = document.createElement("li");
+      chatLi.classList.add("chat", className);
+      let chatContent = 
+        className === "chat-outgoing" ? `<p>${message}</p>` : `<p>${message}</p>`;
+      chatLi.innerHTML = chatContent;
+      return chatLi;
+    };
+
     $(document).ready(function(){
-      $('#send_input').click(function(){
+      const opt_elmt = document.getElementById("opt");
+      const chatbox = document.querySelector(".chatbox");
+      $('#sendBTN').click(function(){
         var input = $('#user_input').val();
+        if (!input) return;
+
+        chatbox.insertBefore(createChatLi(input, "chat-outgoing"), opt_elmt);
+        chatbox.scrollTo(0, chatbox.scrollHeight);
+        // $('#user_input').val("");
+
+        const incomingChatLi = createChatLi("Thinking...", "chat-incoming");
+        chatbox.insertBefore(incomingChatLi, opt_elmt);
+        chatbox.scrollTo(0, chatbox.scrollHeight);
+
         $.ajax({
           method: "POST",
           url: "/func",
           data: { user_input: input}
         })
         .done(function( msg ) {
-          $('.input').hide();
-          $('#response').html(msg);
-          $('.ans').show();
-          $('.select').show();
+          incomingChatLi.innerHTML = `<p>The possible disease you have is 
+            <strong>${msg}</strong></p>`;
+          var drugChatLi = 
+            createChatLi("Do you want to get information about disease-related over-the-counter drugs?", "chat-incoming");
+          chatbox.insertBefore(drugChatLi, opt_elmt);
+          chatbox.scrollTo(0, chatbox.scrollHeight);
+          $('#opt').show();
+
         });
       });
 
-      $('#opt').click(function(){
-        var option = $('input[name=option]:checked').val();
+      $('#opt_no').click(function(){$('#opt').hide();});
+      $('#opt_yes').click(function(){
+        $('#opt').hide();
+        var option = 'yes';
+        // NO input !!!
         var input = $('#user_input').val();
+        const incomingChatLi = createChatLi("Thinking...", "chat-incoming");
+        chatbox.insertBefore(incomingChatLi, opt_elmt);
         $.ajax({
           method: "POST",
           url: "/drugs",
           data: { option: option, user_input: input}
         })
         .done(function( msg ) {
-          if (option == 'yes') {
-            $('#drugs').html(msg);
-            $('.drug_div').show();
+          // msg is a json with key and value
+          for (var key in msg) {
+            if (key == "1") incomingChatLi.innerHTML = `<p>Top ${Object.keys(msg).length} OTC recommendations:</p>`;
+            incomingChatLi.innerHTML += `<p>${key}. ${msg[key]}</p>`;
           }
-          $('.select').hide();
-          $('.feedback').show();
+          chatbox.scrollTo(0, chatbox.scrollHeight);
         });
       });
     });
   </script>
 </head>
 <body>
-  <div class="input">
-    <textarea name="user_input" id="user_input" placeholder="Type your situation here in English"></textarea>
-    <input type="submit" id="send_input" value="Send">
-  </div>
-
-  <div class="ans">
-    <p>
-      The possible disease you have is
-      <strong id="response"></strong>.
-    </p><br>
-  </div>
-
-  <div class="select">
-    <label for="option">
-      Do you want to get information about disease-related over-the-counter drugs?
-    </label><br>
-    <input type="radio" name="option" value="yes">Yes
-    <input type="radio" name="option" value="no" checked>No
-    <input type="submit" value="Submit" id="opt">
-  </div>
-  <hr>
-
-  <div class="drug_div">
-    <p>
-      Top 5 OTC recommendations:<br>
-      <ol id="drugs">
-      </ol>
-    </p><hr>
-  </div>
-
-  <div class="feedback">
-    <p>
-      <strong>Thank you for using our service!</strong>
-    </p>
+  <div class="chatBot">
+    <header>
+      <h2>Project Demo</h2>
+      <span alt="Close"
+				id="cross">X</span>
+    </header>
+  
+    <ul class="chatbox">
+      <li class="chat-incoming chat">
+        <p>Hi! Please type your situation here in English</p>
+      </li>
+      <li class="chat-incoming chat" id="opt">
+        <p>
+          <button id="opt_yes">Yes</button>
+          <button id="opt_no">No</button>
+        </p>
+      </li>
+    </ul>
+    <div class="chat-input">
+      <textarea id="user_input"
+        placeholder="Enter a message..."></textarea>
+      <button id="sendBTN">Send</button>
+    </div>
   </div>
   
 </body>

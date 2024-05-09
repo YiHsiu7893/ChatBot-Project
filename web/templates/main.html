@@ -26,7 +26,7 @@
 
         chatbox.insertBefore(createChatLi(input, "chat-outgoing"), opt_elmt);
         chatbox.scrollTo(0, chatbox.scrollHeight);
-        // $('#user_input').val("");
+        $('#user_input').val("");
 
         const incomingChatLi = createChatLi("Thinking...", "chat-incoming");
         chatbox.insertBefore(incomingChatLi, opt_elmt);
@@ -53,8 +53,8 @@
       $('#opt_yes').click(function(){
         $('#opt').hide();
         var option = 'yes';
-        // NO input !!!
-        var input = $('#user_input').val();
+        outgo_lis = document.querySelectorAll('.chat-outgoing');
+        var input = outgo_lis[outgo_lis.length - 1].innerText;
         const incomingChatLi = createChatLi("Thinking...", "chat-incoming");
         chatbox.insertBefore(incomingChatLi, opt_elmt);
         $.ajax({
@@ -64,9 +64,14 @@
         })
         .done(function( msg ) {
           // msg is a json with key and value
-          for (var key in msg) {
-            if (key == "1") incomingChatLi.innerHTML = `<p>Top ${Object.keys(msg).length} OTC recommendations:</p>`;
-            incomingChatLi.innerHTML += `<p>${key}. ${msg[key]}</p>`;
+          if (Object.keys(msg).length == 0) {
+            incomingChatLi.innerHTML = `<p>Sorry, no OTC recommendations found.</p>`;
+          }
+          else{
+            for (var key in msg) {
+              if (key == "1") incomingChatLi.innerHTML = `<p>Top ${Object.keys(msg).length} OTC recommendations:</p>`;
+              incomingChatLi.innerHTML += `<p>${key}. ${msg[key]}</p>`;
+            }
           }
           chatbox.scrollTo(0, chatbox.scrollHeight);
         });

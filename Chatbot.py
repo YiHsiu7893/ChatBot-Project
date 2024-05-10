@@ -3,7 +3,7 @@ import torch
 
 from Tokenizers import tokenizer
 from Models import Process_Module
-from Recommender import otc_recmd
+from Recommender import otc_recmd, update_otc
 
 
 def main(text):

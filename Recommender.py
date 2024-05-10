@@ -1,5 +1,23 @@
 import pandas as pd
 from sentence_transformers import SentenceTransformer, util
+import requests, os
+
+def update_otc():
+    req = requests.get("https://data.fda.gov.tw/opendata/exportDataList.do?method=ExportData&InfoId=36&logType=2")
+
+    cont = req.content
+    csv = open("OTC.zip", 'wb')
+    csv.write(cont)
+    csv.close()
+    os.system("unzip OTC.zip > /dev/null && rm OTC.zip")
+    os.system("head -n 1 36_2.csv > tmp.csv && grep -v '已註銷' 36_2.csv >> tmp.csv && rm 36_2.csv")
+    os.system("head -n 1 tmp.csv > OTC.csv && grep '成藥' tmp.csv >> OTC.csv && rm tmp.csv")
+    df_tmp = pd.read_csv("OTC.csv")
+    for idx, row in df_tmp.iterrows():
+        if "成藥" not in row["藥品類別"]:
+            df_tmp.drop(idx, inplace=True)
+    df_tmp.to_csv("OTC.csv", index=False)
+    # df_tmp.to_excel("OTC.xlsx", index=False)
 
 
 def otc_recmd(text):
@@ -15,14 +33,12 @@ def otc_recmd(text):
 
     idcs_zh = sample["適應症"]
 
-
     # Indications embedding
     idc_vecs = [model.encode(idc) for idc in idcs_en]
 
     # Description embedding
     text = text.rstrip(".").split('. ')
     text_vecs = [model.encode(t) for t in text]
-
 
     # Compute similarity
     simi = list()
@@ -48,7 +64,6 @@ def otc_recmd(text):
     # similarity.sort(key=a, reverse=True)
     simi.sort(key=lambda x: x[1], reverse=True)
 
-
     # Show the result
     print("Top 5 OTC recommendations:")
     results = ""
@@ -58,5 +73,5 @@ def otc_recmd(text):
             # print(otcs[simi[i][0]], simi[i][1].item(), "\n", idcs_zh[simi[i][0]])
     return results
     
-
+update_otc()
 #otc_recmd("I have a sore throat and keep coughing. I feel my throat is very dry and I have a fever.")

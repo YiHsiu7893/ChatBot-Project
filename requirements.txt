@@ -19,3 +19,4 @@ Flask==3.0.3
 # nltk.download('stopwords')
 # nltk.download('punkt')
 # nltk.download('wordnet')
+# sudo apt install unzip

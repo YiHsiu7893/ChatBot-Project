@@ -5,6 +5,8 @@ app = Flask(__name__, template_folder='web/templates', static_folder='web/static
 app.config['JSON_AS_ASCII'] = False
 app.config['JSONIFY_MIMETYPE'] = "application/json;charset=utf-8"
 
+Chatbot.update_otc()
+
 @app.route('/main', methods=['GET'])
 def show_main():
     return render_template('main.html')

@@ -72,6 +72,26 @@ header h2 {
     background-color: #eaeaea;
 }
 
+.chat-incoming button {
+    width: 30%;
+    font-size: 16px;
+    padding: 8px;
+    border: 0;
+    outline: none;
+    color: white;
+    font-weight: 600;
+    border-radius: 7px;
+    cursor: pointer;
+}
+
+#opt_yes {
+    background-color: green;
+}
+
+#opt_no {
+    background-color: red;
+}
+
 .chat-input {
     padding: 10px;
     border-top: 1px solid #ccc;

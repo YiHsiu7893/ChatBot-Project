@@ -5,6 +5,8 @@ Please use `pip install -r requirements.txt` to get modules you need for this ch
 
 Then, run `python -W ignore Chatbot.py` to start.
 
+You can also run `python api.py` to check web service run in Flask.
+
 ## Architecture
 <img src="https://github.com/YiHsiu7893/ChatBot-Project/blob/main/images/architecture.jpg" width=70% height=70%>
 

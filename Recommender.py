@@ -1,6 +1,7 @@
 import pandas as pd
 from sentence_transformers import SentenceTransformer, util
 import requests, os
+from googletrans import Translator
 
 def update_otc():
     req = requests.get("https://data.fda.gov.tw/opendata/exportDataList.do?method=ExportData&InfoId=36&logType=2")
@@ -16,6 +17,20 @@ def update_otc():
     for idx, row in df_tmp.iterrows():
         if "成藥" not in row["藥品類別"]:
             df_tmp.drop(idx, inplace=True)
+    
+    # do translation
+    translator = Translator(
+        service_urls=['translate.google.com', 
+                      'translate.google.com.tw'])
+    # use dictionary to store the translation
+    d = dict()
+    trans = []
+    for row in df_tmp.iterrows():
+        i = row[1]["適應症"]
+        if i not in d:
+            d[i] = translator.translate(i, src='zh-tw', dest='en').text
+        trans.append(d[i])
+    df_tmp.insert(12, "Indications", trans)
     df_tmp.to_csv("OTC.csv", index=False)
     # df_tmp.to_excel("OTC.xlsx", index=False)
 
@@ -23,7 +38,7 @@ def update_otc():
 def otc_recmd(text):
     model = SentenceTransformer('distilbert-base-nli-mean-tokens')
 
-    # Load data (length 362)
+    # Load data
     sample = pd.read_csv("OTC.csv")
 
     otcs = sample["中文品名"]
@@ -73,5 +88,5 @@ def otc_recmd(text):
             # print(otcs[simi[i][0]], simi[i][1].item(), "\n", idcs_zh[simi[i][0]])
     return results
     
-update_otc()
-#otc_recmd("I have a sore throat and keep coughing. I feel my throat is very dry and I have a fever.")
+# update_otc()
+# otc_recmd("I have a sore throat and keep coughing. I feel my throat is very dry and I have a fever.")

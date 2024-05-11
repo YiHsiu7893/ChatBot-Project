@@ -5,7 +5,6 @@ app = Flask(__name__, template_folder='web/templates', static_folder='web/static
 app.config['JSON_AS_ASCII'] = False
 app.config['JSONIFY_MIMETYPE'] = "application/json;charset=utf-8"
 
-Chatbot.update_otc()
 
 @app.route('/main', methods=['GET'])
 def show_main():
@@ -38,5 +37,6 @@ def run_otc():
     
 
 if __name__ == '__main__':
+    Chatbot.update_otc()
     app.debug = True
     app.run()

@@ -1,5 +1,6 @@
-import torch.nn as nn
 import torch
+import torch.nn as nn
+import torch.nn.functional as F
 import numpy as np
 
 from sklearn.svm import SVC
@@ -93,4 +94,4 @@ class Process_Module(nn.Module):
             # gradient descent or adam step
             self.optimizer.step()
 
-        return outputs
+        return F.softmax(outputs, dim=1)

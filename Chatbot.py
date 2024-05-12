@@ -40,6 +40,7 @@ def main(text):
     x = torch.tensor(sent_indices).unsqueeze(0)
     text_list = [text]
     probs = model.run(x, text_list, None, 'test')
+    print(probs)
     _, predictions = probs.max(1)
 
     idx2dis = torch.load('Weights/idx.pth')

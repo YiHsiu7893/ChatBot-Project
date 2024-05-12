@@ -17,6 +17,19 @@
       return chatLi;
     };
 
+    function closeChat() {
+      let ui = document.querySelector(".chatBot");
+      if (ui.style.display != 'none') {
+          ui.style.display = "none";
+          document.querySelector(".end").style.display = "block";
+      }
+    }
+
+    function reset() {
+      // GET /main to restart the chat
+      window.location.href = "/main";
+    }
+
     $(document).ready(function(){
       const opt_elmt = document.getElementById("opt");
       const chatbox = document.querySelector(".chatbox");
@@ -49,7 +62,9 @@
         });
       });
 
-      $('#opt_no').click(function(){$('#opt').hide();});
+      $('#opt_no').click(function(){
+        $('#opt').hide();
+      });
       $('#opt_yes').click(function(){
         $('#opt').hide();
         var option = 'yes';
@@ -83,7 +98,7 @@
   <div class="chatBot">
     <header>
       <h2>Project Demo</h2>
-      <span alt="Close"
+      <span alt="Close" onclick="closeChat()"
 				id="cross">X</span>
     </header>
   
@@ -106,6 +121,13 @@
       <button id="sendBTN">Send</button>
     </div>
   </div>
+  <div class="end">
+    <p class="lastMessage">Thanks for using our service!</p>
+    <button id="endBTN" onclick="reset()">Restart</button>
+  </div>
   
+  <div class="footer">
+    <p>資訊僅供參考</p>
+  </div>
 </body>
 </html>

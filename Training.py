@@ -60,6 +60,8 @@ y_total = df["label"]
 # Dataset split 
 # X_train, X_val, y_train, y_val = train_test_split(df["text"], df["label"], test_size=0.2, random_state=42)
 
+train = [0.0] * 5
+val = [0.0] * 5
 for sp in range(fold):
     # for cross validation
     X_train = X_total.drop(X_total.index[sp*len(X_total)//fold:(sp+1)*len(X_total)//fold])
@@ -107,8 +109,22 @@ for sp in range(fold):
         for inputs, texts, labels in train_loader:
             module.run(inputs, texts, labels, 'train')
         
-        check_metrics(train_loader, val_loader, module, 1 if epoch+1==num_epochs else 0)
+    train_apd, val_apd = check_metrics(train_loader, val_loader, module, 1 if epoch+1==num_epochs else 0)
+    for i in range(5):
+        train[i] += train_apd[i]
+        val[i] += val_apd[i]
 
+print(f"Train Average Accuracy: {train[0]/fold}")
+print(f"Train Average Precision: {train[1]/fold}")
+print(f"Train Average Recall: {train[2]/fold}")
+print(f"Train Average F1-score: {train[3]/fold}")
+print(f"Train Average AUC-score: {train[4]/fold}")
+print("==============================")
+print(f"Val Average Accuracy: {val[0]/fold}")
+print(f"Val Average Precision: {val[1]/fold}")
+print(f"Val Average Recall: {val[2]/fold}")
+print(f"Val Average F1-score: {val[3]/fold}")
+print(f"Val Average AUC-score: {val[4]/fold}")
 
 torch.save(module.state_dict(), 'model.pth')
 torch.save(vocab, 'vocab.pth')

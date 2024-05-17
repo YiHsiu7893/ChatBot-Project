@@ -60,24 +60,39 @@ def check_metrics(train_loader, val_loader, module, flag):
             val_predictions.extend(predictions.numpy())
             val_labels.extend(labels.numpy())
 
+    train = []
     print(f"Train       Accuracy: {accuracy_score(train_labels, train_predictions):.2f}")
     print(f"Train       Precision: {precision_score(train_labels, train_predictions, average='macro', zero_division=0):.2f}")
     print(f"Train       Recall: {recall_score(train_labels, train_predictions, average='macro'):.2f}")
     print(f"Train       F1-score: {f1_score(train_labels, train_predictions, average='macro'):.2f}")
     score = multi_auc(train_labels, np.vstack(train_probs))
     print(f"Train       AUC-score: {score:.2f}")
+    train.append(accuracy_score(train_labels, train_predictions))
+    train.append(precision_score(train_labels, train_predictions, average='macro', zero_division=0))
+    train.append(recall_score(train_labels, train_predictions, average='macro'))
+    train.append(f1_score(train_labels, train_predictions, average='macro'))
+    train.append(score)
     if flag:
         plt.title(f"Train Set ROC Curve")
         plt.show()
     
+    val = []
     print(f"\nValidation  Accuracy: {accuracy_score(val_labels, val_predictions):.2f}")
     print(f"Validation  Precision: {precision_score(val_labels, val_predictions, average='macro', zero_division=0):.2f}")
     print(f"Validation  Recall: {recall_score(val_labels, val_predictions, average='macro'):.2f}")
     print(f"Validation  F1-score: {f1_score(val_labels, val_predictions, average='macro'):.2f}")
     score = multi_auc(val_labels, np.vstack(val_probs))
     print(f"Validation  AUC-score: {score:.2f}")
+    val.append(accuracy_score(val_labels, val_predictions))
+    val.append(precision_score(val_labels, val_predictions, average='macro', zero_division=0))
+    val.append(recall_score(val_labels, val_predictions, average='macro'))
+    val.append(f1_score(val_labels, val_predictions, average='macro'))
+    val.append(score)
+
     if flag:
         plt.title(f'Validation Set ROC Curve')
         plt.show()
 
     module.b_model.train()
+
+    return train, val

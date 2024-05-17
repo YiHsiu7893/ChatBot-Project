@@ -7,92 +7,7 @@
   <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
 
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-  <script>
-    const createChatLi = (message, className) => {
-      const chatLi = document.createElement("li");
-      chatLi.classList.add("chat", className);
-      let chatContent = 
-        className === "chat-outgoing" ? `<p>${message}</p>` : `<p>${message}</p>`;
-      chatLi.innerHTML = chatContent;
-      return chatLi;
-    };
-
-    function closeChat() {
-      let ui = document.querySelector(".chatBot");
-      if (ui.style.display != 'none') {
-          ui.style.display = "none";
-          document.querySelector(".end").style.display = "block";
-      }
-    }
-
-    function reset() {
-      // GET /main to restart the chat
-      window.location.href = "/main";
-    }
-
-    $(document).ready(function(){
-      const opt_elmt = document.getElementById("opt");
-      const chatbox = document.querySelector(".chatbox");
-      $('#sendBTN').click(function(){
-        var input = $('#user_input').val();
-        if (!input) return;
-
-        chatbox.insertBefore(createChatLi(input, "chat-outgoing"), opt_elmt);
-        chatbox.scrollTo(0, chatbox.scrollHeight);
-        $('#user_input').val("");
-
-        const incomingChatLi = createChatLi("Thinking...", "chat-incoming");
-        chatbox.insertBefore(incomingChatLi, opt_elmt);
-        chatbox.scrollTo(0, chatbox.scrollHeight);
-
-        $.ajax({
-          method: "POST",
-          url: "/func",
-          data: { user_input: input}
-        })
-        .done(function( msg ) {
-          incomingChatLi.innerHTML = `<p>The possible disease you have is 
-            <strong>${msg}</strong></p>`;
-          var drugChatLi = 
-            createChatLi("Do you want to get information about disease-related over-the-counter drugs?", "chat-incoming");
-          chatbox.insertBefore(drugChatLi, opt_elmt);
-          chatbox.scrollTo(0, chatbox.scrollHeight);
-          $('#opt').show();
-
-        });
-      });
-
-      $('#opt_no').click(function(){
-        $('#opt').hide();
-      });
-      $('#opt_yes').click(function(){
-        $('#opt').hide();
-        var option = 'yes';
-        outgo_lis = document.querySelectorAll('.chat-outgoing');
-        var input = outgo_lis[outgo_lis.length - 1].innerText;
-        const incomingChatLi = createChatLi("Thinking...", "chat-incoming");
-        chatbox.insertBefore(incomingChatLi, opt_elmt);
-        $.ajax({
-          method: "POST",
-          url: "/drugs",
-          data: { option: option, user_input: input}
-        })
-        .done(function( msg ) {
-          // msg is a json with key and value
-          if (Object.keys(msg).length == 0) {
-            incomingChatLi.innerHTML = `<p>Sorry, no OTC recommendations found.</p>`;
-          }
-          else{
-            for (var key in msg) {
-              if (key == "1") incomingChatLi.innerHTML = `<p>Top ${Object.keys(msg).length} OTC recommendations:</p>`;
-              incomingChatLi.innerHTML += `<p>${key}. ${msg[key]}</p>`;
-            }
-          }
-          chatbox.scrollTo(0, chatbox.scrollHeight);
-        });
-      });
-    });
-  </script>
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
 </head>
 <body>
   <div class="chatBot">
@@ -114,6 +29,23 @@
             No</button>
         </p>
       </li>
+      <li class="chat-incoming chat" id="drugs">
+        <table>
+          <caption id="cpt_drugs">
+            Top over-the-counter drug recommendations:
+          </caption>
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Name</th>
+              <th>Similarity</th>
+              <th>Indications</th>
+            </tr>
+          </thead>
+          <tbody id="tb_drugs">
+          </tbody>
+        </table>
+      </li>
     </ul>
     <div class="chat-input">
       <textarea id="user_input"
@@ -121,6 +53,7 @@
       <button id="sendBTN">Send</button>
     </div>
   </div>
+  
   <div class="end">
     <p class="lastMessage">Thanks for using our service!</p>
     <button id="endBTN" onclick="reset()">Restart</button>

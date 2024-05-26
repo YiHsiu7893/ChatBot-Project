@@ -1,5 +1,6 @@
 # Import Necessary Libraries
 import torch
+from googletrans import Translator
 
 from Tokenizers import tokenizer
 from Models import Process_Module
@@ -16,6 +17,12 @@ def main(text):
 
 
     # Tokenize input sentence
+    # 判斷是否為中文，若是，則翻譯成英文
+    zh_tw = any('\u4e00' <= char <= '\u9fff' for char in text)
+    if zh_tw:
+        translator = Translator(raise_exception=True)
+        text = translator.translate(text, src='zh-tw', dest='en').text
+
     sent = tokenizer(text)
 
     # Load vocabulary list
@@ -40,18 +47,23 @@ def main(text):
     x = torch.tensor(sent_indices).unsqueeze(0)
     text_list = [text]
     probs = model.run(x, text_list, None, 'test')
-    print(probs)
     _, predictions = probs.max(1)
+    print(probs)
 
     idx2dis = torch.load('Weights/idx.pth')
-    print(idx2dis[predictions.item()])
-    return idx2dis[predictions.item()]
+    if zh_tw:
+        ans = translator.translate(idx2dis[predictions.item()], src='en', dest='zh-tw').text
+    else:
+        ans = idx2dis[predictions.item()]
+    print(ans)
+    return ans
 
 
 if __name__ == '__main__':
     ### Input ###
     #text = input("What symptoms are you experiencing?\n")
-    text = "I have a rash on my legs that is causing a lot of discomforts. It seems there is a cramp and I can see prominent veins on the calf. Also, I have been feeling very tired and fatigued in the past couple of days." 
+    #text = "I have a rash on my legs that is causing a lot of discomforts. It seems there is a cramp and I can see prominent veins on the calf. Also, I have been feeling very tired and fatigued in the past couple of days." 
+    text = "I feel cold, have a stomach ache, and have had diarrhea for several days. I feel cold, have a stomach ache, and have had diarrhea for several days. I feel cold, have a stomach ache, and have had diarrhea for several days."
 
     main(text)
 

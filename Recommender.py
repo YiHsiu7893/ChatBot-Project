@@ -52,6 +52,11 @@ def otc_recmd(text):
     idc_vecs = [model.encode(idc) for idc in idcs_en]
 
     # Description embedding
+    # 判斷是否為中文，若是，則翻譯成英文
+    zh_tw = any('\u4e00' <= char <= '\u9fff' for char in text)
+    if zh_tw:
+        translator = Translator(raise_exception=True)
+        text = translator.translate(text, src='zh-tw', dest='en').text
     text = text.rstrip(".").split('. ')
     text_vecs = [model.encode(t) for t in text]
 

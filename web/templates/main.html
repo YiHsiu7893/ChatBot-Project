@@ -3,35 +3,42 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Project Demo</title>
+  <title>Project Demo / 專題展示</title>
   <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
 
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
   <script src="{{ url_for('static', filename='app.js') }}"></script>
 </head>
 <body>
-  <div class="chatBot">
+  <div id="lang">
+    <p>Choose language / 選擇語言:</p>
+    <button id="en" onclick="changeLang('en')">English</button>
+    <button id="zh" onclick="changeLang('zh')">中文</button>
+  </div>
+
+  <div class="chatBot-en">
     <header>
       <h2>Project Demo</h2>
       <span alt="Close" onclick="closeChat()"
-				id="cross">X</span>
+        id="cross">X</span>
     </header>
   
-    <ul class="chatbox">
+    <ul class="chatbox-en">
+      <!--選擇UI及成藥推薦的語言，output語言是根據input有沒有中文決定-->
       <li class="chat-incoming chat">
         <p>Hi! Please type your situation here in English</p>
       </li>
-      <li class="chat-incoming chat" id="opt">
+      <li class="chat-incoming chat" id="opt-en">
         <p>
-          <button id="opt_yes" style="background-color: green;">
+          <button id="opt_yes-en" style="background-color: green;">
             Yes</button>
-          <button id="opt_no" style="background-color: red;">
+          <button id="opt_no-en" style="background-color: red;">
             No</button>
         </p>
       </li>
-      <li class="chat-incoming chat" id="drugs">
+      <li class="chat-incoming chat" id="drugs-en">
         <table>
-          <caption id="cpt_drugs">
+          <caption id="cpt_drugs-en">
             Top over-the-counter drug recommendations:
           </caption>
           <thead>
@@ -42,25 +49,75 @@
               <th>Indications</th>
             </tr>
           </thead>
-          <tbody id="tb_drugs">
+          <tbody id="tb_drugs-en">
           </tbody>
         </table>
       </li>
     </ul>
     <div class="chat-input">
-      <textarea id="user_input"
-        placeholder="Enter a message..."></textarea>
-      <button id="sendBTN">Send</button>
+      <textarea id="user_input-en"
+        placeholder="Enter your situation..."></textarea>
+      <button id="sendBTN-en" onclick="sendMsg()">Send</button>
     </div>
   </div>
-  
-  <div class="end">
+
+  <div class="end-en">
     <p class="lastMessage">Thanks for using our service!</p>
     <button id="endBTN" onclick="reset()">Restart</button>
   </div>
+
+  <div class="chatBot-zh">
+    <header>
+      <h2>專題展示</h2>
+      <span alt="Close" onclick="closeChat()"
+        id="cross">X</span>
+    </header>
+  
+    <ul class="chatbox-zh">
+      <!--選擇UI及成藥推薦的語言，output語言是根據input有沒有中文決定-->
+      <li class="chat-incoming chat">
+        <p>您好! 請闡述您遇到的疾病、症狀情形，像是持續多久、嚴重程度 </p>
+      </li>
+      <li class="chat-incoming chat" id="opt-zh">
+        <p>
+          <button id="opt_yes-zh" style="background-color: green;">
+            是</button>
+          <button id="opt_no-zh" style="background-color: red;">
+            否</button>
+        </p>
+      </li>
+      <li class="chat-incoming chat" id="drugs-zh">
+        <table>
+          <caption id="cpt_drugs-zh">
+            Top over-the-counter drug recommendations:
+          </caption>
+          <thead>
+            <tr>
+              <th>排名</th>
+              <th>藥品名</th>
+              <th>匹配度</th>
+              <th>適應症</th>
+            </tr>
+          </thead>
+          <tbody id="tb_drugs-zh">
+          </tbody>
+        </table>
+      </li>
+    </ul>
+    <div class="chat-input">
+      <textarea id="user_input-zh"
+        placeholder="輸入您的情形..."></textarea>
+      <button id="sendBTN-zh" onclick="sendMsg()">發送</button>
+    </div>
+  </div>
+
+  <div class="end-zh">
+    <p class="lastMessage">感謝您使用我們的服務!</p>
+    <button id="endBTN" onclick="reset()">重新開始</button>
+  </div>
   
   <div class="footer">
-    <p>資訊僅供參考</p>
+    <p>For reference only / 資訊僅供參考</p>
   </div>
 </body>
 </html>

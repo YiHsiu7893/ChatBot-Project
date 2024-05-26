@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 
-#opt, .end, #drugs {
+#opt-zh, #opt-en, .end-en, .end-zh, #drugs-en, #drugs-zh {
     display: none;
 }
 
@@ -17,7 +17,8 @@ body {
     background-color: #f7f7f7;
 }
 
-.chatBot {
+.chatBot-en, .chatBot-zh {
+    display: none;
     border: 3px solid #2F8D46;
     border-radius: 10px;
     margin: 50px auto;
@@ -44,14 +45,14 @@ header h2 {
     margin: 0;
 }
 
-.chatbox {
+.chatbox-en, .chatbox-zh {
     padding: 15px;
     list-style: none;
     overflow-y: auto;
     height: 400px;
 }
 
-.chatbox li {
+.chatbox-en li, .chatbox-zh li {
     margin-bottom: 10px;
 }
 
@@ -155,7 +156,32 @@ td {
     background-color: #ff3737e8;
 }
 
-#sendBTN {
+#lang {
+    width: 25%;
+    margin: auto;
+    margin-top: 50px;
+}
+#lang p {
+    font-size: 30px;
+    font-weight: 600;
+    text-align: center;
+}
+#en, #zh {
+    padding: 8px;
+    border: 0;
+    outline: none;
+    font-size: 25px;
+    font-weight: 600;
+    border-radius: 6px;
+    background-color: #2F8D46;
+    cursor: pointer;
+    color: white;
+    margin-top: 30px;
+    height: 50px;
+    width: 100%;
+}
+
+.chat-input button {
     width: 100%;
     padding: 8px;
     border: 0;

@@ -47,8 +47,11 @@ def main(text):
     x = torch.tensor(sent_indices).unsqueeze(0)
     text_list = [text]
     probs = model.run(x, text_list, None, 'test')
-    _, predictions = probs.max(1)
+    max_prob, predictions = probs.max(1)
     print(probs)
+    max_prob = max_prob.data[0].item()
+    if max_prob < 0.85:
+        return "Not enough information"
 
     idx2dis = torch.load('Weights/idx.pth')
     if zh_tw:
@@ -63,7 +66,7 @@ if __name__ == '__main__':
     ### Input ###
     #text = input("What symptoms are you experiencing?\n")
     #text = "I have a rash on my legs that is causing a lot of discomforts. It seems there is a cramp and I can see prominent veins on the calf. Also, I have been feeling very tired and fatigued in the past couple of days." 
-    text = "I feel cold, have a stomach ache, and have had diarrhea for several days. I feel cold, have a stomach ache, and have had diarrhea for several days. I feel cold, have a stomach ache, and have had diarrhea for several days."
+    text = "I feel cold, have a stomach ache, and have had diarrhea for several days."
 
     main(text)
 

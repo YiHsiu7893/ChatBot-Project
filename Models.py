@@ -44,7 +44,8 @@ class Process_Module(nn.Module):
         self.max_words = max_words
 
         self.b_model = BiLSTM(vocab_size, embedding_dim, hidden_dim, num_layers)
-        self.criterion = nn.CrossEntropyLoss()
+        #self.criterion = nn.CrossEntropyLoss()
+        self.criterion = nn.BCEWithLogitsLoss()
         self.optimizer = Adam(self.b_model.parameters(), lr=learning_rate)
         self.attention = attention_block(201)
         self.classifier = nn.Linear(283, num_classes, dtype=torch.double)
@@ -94,4 +95,4 @@ class Process_Module(nn.Module):
             # gradient descent or adam step
             self.optimizer.step()
 
-        return F.softmax(outputs, dim=1)
+        return torch.sigmoid(outputs)#F.softmax(outputs, dim=1)

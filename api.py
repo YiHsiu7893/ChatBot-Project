@@ -14,9 +14,13 @@ def show_main():
 @app.route('/func', methods=['POST'])
 def run_chatbot():
     if request.method == 'POST':
-        text = request.values['user_input']
+        input = request.get_json()
+        text = ""
+        for key in input:
+            text = text + input[key]
+        # text = request.values['user_input']
         output = Chatbot.main(text)
-        return output
+        return jsonify(output)
     
 
 @app.route('/drugs', methods=['POST'])

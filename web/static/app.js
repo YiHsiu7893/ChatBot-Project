@@ -1,4 +1,6 @@
 var language;
+var inp_dict = {};
+var count = 1;
 
 const createChatLi = (message, className) => {
     const chatLi = document.createElement("li");
@@ -77,6 +79,9 @@ function sendMsg() {
     const input = inp.value;
     if (!input) return;
 
+    inp_dict[count] = input;
+    count += 1;
+
     chatbox.insertBefore(createChatLi(input, "chat-outgoing"), opt_elmt);
     chatbox.scrollTo(0, chatbox.scrollHeight);
     inp.value = "";
@@ -84,27 +89,40 @@ function sendMsg() {
     const incomingChatLi = createChatLi("Thinking...", "chat-incoming");
     chatbox.insertBefore(incomingChatLi, opt_elmt);
     chatbox.scrollTo(0, chatbox.scrollHeight);
+    data_input = JSON.stringify(inp_dict);
 
     $.ajax({
         method: "POST",
         url: "/func",
-        data: { user_input: input }
+        dataType: 'json',
+        contentType: "application/json; charset=utf-8",
+        data: data_input
     })
     .done(function( msg ) {
-        if (language == 'en') {
-            incomingChatLi.innerHTML = `<p>The possible disease you have is 
-                <strong>${msg}</strong></p>`;
-            var drugChatLi = 
-                createChatLi("Do you want to get information about disease-related over-the-counter drugs?", "chat-incoming");
+        if (msg == 'Not enough information') {
+            if (language == 'en') {
+                incomingChatLi.innerHTML = `<p>The information you provide is not enough for disease prediction. Please elaborate more.</p>`;
+            }
+            else {
+                incomingChatLi.innerHTML = `<p>您提供的資訊不足以進行疾病判別，請再詳述您的狀況。</p>`;
+            }
         }
         else {
-            incomingChatLi.innerHTML = `<p>您可能患有的疾病是
-                <strong>${msg}</strong></p>`;
-            var drugChatLi = 
-                createChatLi("您是否想獲取與疾病、症狀相關的成藥資訊?", "chat-incoming");
+            if (language == 'en') {
+                incomingChatLi.innerHTML = `<p>The possible disease you have is 
+                    <strong>${msg}</strong></p>`;
+                var drugChatLi = 
+                    createChatLi("Do you want to get information about disease-related over-the-counter drugs?", "chat-incoming");
+            }
+            else {
+                incomingChatLi.innerHTML = `<p>您可能患有的疾病是
+                    <strong>${msg}</strong></p>`;
+                var drugChatLi = 
+                    createChatLi("您是否想獲取與疾病、症狀相關的成藥資訊?", "chat-incoming");
+            }
+            chatbox.insertBefore(drugChatLi, opt_elmt);
+            opt_elmt.style.display = "block";
         }
-        chatbox.insertBefore(drugChatLi, opt_elmt);
-        opt_elmt.style.display = "block";
         chatbox.scrollTo(0, chatbox.scrollHeight);
     });
 }

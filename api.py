@@ -24,8 +24,9 @@ def run_otc():
     if request.method == 'POST':
         option = request.values['option'] # yes or no
         input = request.values['user_input']
+        lang = request.values['lang']
         if option == 'yes':
-            result = Chatbot.otc_recmd(input).split('\n')
+            result = Chatbot.otc_recmd(input, lang).split('\n')
             
             drugs = dict()
             for i in range(len(result)):
@@ -37,6 +38,6 @@ def run_otc():
     
 
 if __name__ == '__main__':
-    Chatbot.update_otc()
+    # Chatbot.update_otc()
     app.debug = True
     app.run()

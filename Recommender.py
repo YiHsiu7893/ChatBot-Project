@@ -35,24 +35,26 @@ def update_otc():
     # df_tmp.to_excel("OTC.xlsx", index=False)
 
 
-def otc_recmd(text):
+def otc_recmd(text, language):
     model = SentenceTransformer('distilbert-base-nli-mean-tokens')
 
     # Load data
     sample = pd.read_csv("OTC.csv")
 
-    otcs = sample["中文品名"]
+    otcs_zh = sample["中文品名"]
+    otcs_en = sample["英文品名"] # may be empty
 
     sample.loc[sample["Indications"].str.endswith("."), "Indications"] = sample["Indications"].str.rstrip(".")
-    idcs_en = sample["Indications"].str.split(', ').apply(lambda x: ["I have a " + item for item in x])
+    idcs_desc = sample["Indications"].str.split(', ').apply(lambda x: ["I have a " + item for item in x])
 
     idcs_zh = sample["適應症"]
+    idcs_en = sample["Indications"]
 
     # Indications embedding
-    idc_vecs = [model.encode(idc) for idc in idcs_en]
+    idc_vecs = [model.encode(idc) for idc in idcs_desc]
 
     # Description embedding
-    # 判斷是否為中文，若是，則翻譯成英文
+    # 判斷 input 是否為中文，若是，則翻譯成英文
     zh_tw = any('\u4e00' <= char <= '\u9fff' for char in text)
     if zh_tw:
         translator = Translator(raise_exception=True)
@@ -89,7 +91,15 @@ def otc_recmd(text):
     results = ""
     for i in range(5):
         if simi[i][1].item()>0.825:
-            results += otcs[simi[i][0]] + ", " + f"{simi[i][1].item(): .2%}" + ", " + idcs_zh[simi[i][0]] + "\n"
+            # use @ to split the string
+            if language == "en":
+                # if otcs_en is empty, use otcs_zh
+                if otcs_en[simi[i][0]] == "":
+                    results += otcs_zh[simi[i][0]] + "@ " + f"{simi[i][1].item(): .2%}" + "@ " + idcs_en[simi[i][0]] + "\n"
+                else:
+                    results += otcs_en[simi[i][0]] + "@ " + f"{simi[i][1].item(): .2%}" + "@ " + idcs_en[simi[i][0]] + "\n"
+            else:
+                results += otcs_zh[simi[i][0]] + "@ " + f"{simi[i][1].item(): .2%}" + "@ " + idcs_zh[simi[i][0]] + "\n"
             # print(otcs[simi[i][0]], simi[i][1].item(), "\n", idcs_zh[simi[i][0]])
     return results
     

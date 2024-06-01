@@ -25,7 +25,7 @@ def extract_score(string):
 def llm_call(sent):
     query = "Patient: "
     query += sent
-    query += f"\nScore each disease on how they relate to the patient's symptom: {target_list}"
+    query += f"\nScore the severity of each disease based on the symptoms described by the patient: {target_list}"
     query += "\nScores are decimal numbers between 0~1."
 
     result = client.predict(

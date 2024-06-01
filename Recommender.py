@@ -59,7 +59,7 @@ def otc_recmd(text, language):
     if zh_tw:
         translator = Translator(raise_exception=True)
         text = translator.translate(text, src='zh-tw', dest='en').text
-    text = text.rstrip(".").split('. ')
+    text = text.rstrip(".").split('.')
     text_vecs = [model.encode(t) for t in text]
 
     # Compute similarity

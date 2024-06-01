@@ -207,11 +207,11 @@ $(document).ready(function(){
                 drg.style.display = "block";
                 if (language == 'en') {
                     cpt.innerHTML = `Top ${Object.keys(msg).length} over-the-counter drug recommendations:`;
-                    incomingChatLi.innerHTML += `<p>Please ask the pharmacist again when going to the pharmacy.</p>`;
+                    chatbox.appendChild(createChatLi("Please ask the pharmacist again when going to the pharmacy.", "chat-incoming"));
                 }
                 else {
                     cpt.innerHTML = `成藥推薦前 ${Object.keys(msg).length} 名:`;
-                    incomingChatLi.innerHTML += `<p>請在去藥局賣藥時，再次詢問藥師。</p>`;
+                    chatbox.appendChild(createChatLi("請在去藥局賣藥時，再次詢問藥師。", "chat-incoming"));
                 }
                 for (var key in msg) {
                     var row = drug_tb.insertRow();

@@ -4,6 +4,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import Chroma
 from langchain_community.llms.llamacpp import LlamaCpp
+import time
 
 
 # Load .pdf document.
@@ -23,8 +24,7 @@ embeddings = HuggingFaceEmbeddings(model_name="BAAI/bge-base-en-v1.5")
 vectorstore = Chroma.from_documents(documents, embeddings)
 
 # Retriever.
-retriever = vectorstore.as_retriever(search_kwargs={'k': 1})
-
+retriever = vectorstore.as_retriever(search_kwargs={'k': 5})
 
 # Instantiate the LlamaCpp language model.
 llm = LlamaCpp(
@@ -32,7 +32,9 @@ llm = LlamaCpp(
     temperature=0.3,
     max_tokens=2048,
     top_p=1,
-    verbose=False)
+    verbose=False,
+    n_gpu_layers=33,
+    n_ctx=900)
 
 
 # Import necessary libraries.
@@ -44,16 +46,14 @@ from langchain.prompts import ChatPromptTemplate
 # Define prompt template.
 template = """
 <|context|>
-You are a helpful health scorer.\n
-After hearing the patient's description below, give me a number between 0 and 1.\n
-This is the rule of score: 0-0.2 is mild or none, 0.3-0.6 is moderate, and 0.7-1.0 is severe.\n\n
-This is a patient's description:\n
----------------------\n
+I am a helpful health evaluator.
+Based on the patient's statement, give a decimal between 0 and 1, where
+0-0.2 means mild or none, 0.3-0.6 means moderate, and 0.7-1.0 means severe.
 </s>
 <|user|>
 {query}
 </s>
-<|assistant|>
+    <|assistant|>
 """
 
 rag_chain = (
@@ -70,26 +70,26 @@ with open('./Knowledge_base/targets.txt', 'r') as file:
         line = line.strip()
         target_list.append(line)
 
+
 # A function to call for LLM
 def llm_call(sent):
     queries = []
     scores = []
 
     for f in target_list:
-        q = sent
-        q += "\n---------------------\n"
-        q += f"If you are asked to give a score to rate the severity of the patient's {f}, how much would you give?"
+        q = "Patient: "
+        q += sent
+        q += f"\nHow severe would you say my \"{f}\" is, on a scale of 0.0 to 1.0?"
+        q += "Just give a number directly."
 
         queries.append(q)
-
 
     for i in range(len(queries)):
         # Generate response.
         response = rag_chain.invoke(queries[i])
         #print("\n", response)
 
-        score = extract_score(response)
-        
+        score = extract_score(response)   
         scores.append(score)
 
     return scores
@@ -111,7 +111,13 @@ Idea:
 2. 對每個feature，問"有這個症狀嗎?嚴重度?"，並retrieve from baseknowledge(目前是Symptom2Disease。可能需要另外自備?)
 3. RAG問LLM，得到score array
 4. Concatenate with other parts (in Models.py Process_Module)
-"""
 
-#scores = llm_call("I have a rash on my legs that is causing a lot of discomforts. It seems there is a cramp and I can see prominent veins on the calf. Also, I have been feeling very tired and fatigued in the past couple of days.")
-#print("score:", scores)
+start_time = time.time()
+scores = llm_call("Standing or walking for long periods of time causes a lot of pain in my legs. I get cramps upon doing physical activities. There are bruise marks on my legs too.")
+print("score:", scores)
+end_time = time.time()
+
+# 計算並打印運行時間
+elapsed_time = end_time - start_time
+print(f"Elapse time: {elapsed_time:.4f} s")
+"""

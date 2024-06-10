@@ -1,12 +1,10 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import numpy as np
 
-from sklearn.svm import SVC
 from torch.optim import Adam
 from Feature_Ext import feat_extr
-from Linguistic_Ext import llm_call
+#from Linguistic_Ext import llm_call
 from Attention import attention_block
 
 ### BiLSTM model
@@ -21,18 +19,6 @@ class BiLSTM(nn.Module):
         out, _ = self.lstm(embedded)
 
         return out
-
-
-class SVM(nn.Module):
-    def __init__(self, svc_c):
-        super(SVM, self).__init__()
-        self.model = SVC(C=svc_c)
-
-    def fit(self, x, y):
-        return self.model.fit(x, y)
-    
-    def predict(self, x):
-        return self.model.predict(x)
     
 
 # Process Module: (BiLSTM + Feature Extraction + Attention + LLM)
@@ -44,11 +30,11 @@ class Process_Module(nn.Module):
         self.max_words = max_words
 
         self.b_model = BiLSTM(vocab_size, embedding_dim, hidden_dim, num_layers)
-        #self.criterion = nn.CrossEntropyLoss()
-        self.criterion = nn.BCEWithLogitsLoss()
+        self.criterion = nn.CrossEntropyLoss()
+        #self.criterion = nn.BCEWithLogitsLoss()
         self.optimizer = Adam(self.b_model.parameters(), lr=learning_rate)
         self.attention = attention_block(201)
-        self.classifier = nn.Linear(283, num_classes, dtype=torch.double)
+        self.classifier = nn.Linear(201, num_classes, dtype=torch.double)
 
 
     def run(self, inputs, texts, labels, mode):
@@ -64,7 +50,8 @@ class Process_Module(nn.Module):
         # Feature Extraction output
         extract_vecs = []
         for text in texts:
-            extract_vec = torch.from_numpy(feat_extr(text))
+            symps = feat_extr(text)
+            extract_vec = torch.from_numpy(symps)
             extract_vecs.append(extract_vec)
         extract_vecs = torch.stack(extract_vecs)
         
@@ -72,17 +59,20 @@ class Process_Module(nn.Module):
         concate_tensor = torch.cat((b_out, extract_vecs), dim=1) #shape = (8, 38, 201)
         # Attention output
         att_out = self.attention(concate_tensor)  #shape = (8, 201)
-
+        input = att_out
+        """
         # LLM output
         feature_scores = []
         for text in texts:
             score = llm_call(text)
+            print(score)
             feature_scores.append(score)
         feature_scores = np.array(feature_scores)
         feature_scores = torch.from_numpy(feature_scores)
 
         # Concatenate information from two paths, and provide it to the classifier
         input = torch.cat((att_out, feature_scores), dim=1)
+        """
         outputs = self.classifier(input)
 
         if mode == 'train':
@@ -95,4 +85,4 @@ class Process_Module(nn.Module):
             # gradient descent or adam step
             self.optimizer.step()
 
-        return torch.sigmoid(outputs)#F.softmax(outputs, dim=1)
+        return torch.sigmoid(outputs)

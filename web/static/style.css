@@ -69,6 +69,11 @@ header h2 {
     color: #fff;
 }
 
+.chat-outgoing {
+    display: flex;
+    justify-content: flex-end;
+}
+
 .chat-incoming p {
     background-color: #eaeaea;
 }

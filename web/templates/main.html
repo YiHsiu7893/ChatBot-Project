@@ -11,7 +11,7 @@
 </head>
 <body>
   <div id="lang">
-    <p>Choose language / 選擇語言:</p>
+    <p>Choose language<br>/ 選擇語言:</p>
     <button id="en" onclick="changeLang('en')">English</button>
     <button id="zh" onclick="changeLang('zh')">中文</button>
   </div>
@@ -26,8 +26,15 @@
     <ul class="chatbox-en">
       <!--選擇UI及成藥推薦的語言，output語言是根據input有沒有中文決定-->
       <li class="chat-incoming chat">
-        <p>Hi! Please type your situation here in English.</p>
-        <p>For example, "I've been coughing a lot and feeling chilly and shivery. My nose has been quite clogged, making me have difficulty breathing. I also have a lot of phlegm."</p>
+        <p>
+          Hello! I am your health assistant. Please tell me about your current symptoms and condition. To better assist you, please describe in as much detail as possible, for example:<br>
+          •	Duration of the symptoms<br>
+          •	The severity of the symptoms<br>
+          •	Whether there are any other related symptoms
+        </p>
+        <p>For instance, you could say: <br>
+          "I've been coughing a lot and feeling chilly and shivery. My nose has been quite clogged, making me have difficulty breathing. I also have a lot of phlegm."
+        </p>
       </li>
       <li class="chat-incoming chat" id="opt-en">
         <p>
@@ -77,8 +84,13 @@
     <ul class="chatbox-zh">
       <!--選擇UI及成藥推薦的語言，output語言是根據input有沒有中文決定-->
       <li class="chat-incoming chat">
-        <p>您好! 請闡述您遇到的疾病、症狀情形，像是持續多久、嚴重程度 </p>
-        <p>例如，"我經常打噴嚏並且喉嚨痛。我的嘴唇和眼睛周圍偶爾會腫脹。一旦我開始打噴嚏，我就停不下來。"</p>
+        <p>您好！我是您的健康助手。請告訴我您目前的症狀和病情。為了更好地幫助您，請盡量詳細描述，像是：<br>
+          - 症狀的持續時間<br>
+          - 症狀的嚴重程度<br>
+          - 是否有其他相關症状<br>
+        </p>
+        <p>例如，您可以這樣說：<br>
+          「我經常打噴嚏並且喉嚨痛。我的嘴唇和眼睛周圍偶爾會腫脹。一旦我開始打噴嚏，我就停不下來。」</p>
       </li>
       <li class="chat-incoming chat" id="opt-zh">
         <p>

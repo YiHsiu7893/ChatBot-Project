@@ -91,40 +91,42 @@ function sendMsg() {
     chatbox.scrollTo(0, chatbox.scrollHeight);
     data_input = JSON.stringify(inp_dict);
 
-    $.ajax({
-        method: "POST",
-        url: "/func",
-        dataType: 'json',
-        contentType: "application/json; charset=utf-8",
-        data: data_input
-    })
-    .done(function( msg ) {
-        if (msg == 'Not enough information') {
-            if (language == 'en') {
-                incomingChatLi.innerHTML = `<p>The information you provide is not enough for disease prediction. Please elaborate more.</p>`;
+    // rewrite following ajax call to vanilla js
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", "/func");
+    xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            const msg = JSON.parse(xhr.responseText);
+            if (msg === 'Not enough information') {
+                if (language === 'en') {
+                    incomingChatLi.innerHTML = `<p>Thank you for the description. To assist you more accurately, I need additional information. Please describe your symptoms in detail, including:<br>
+                    •	Duration<br>
+                    •	Severity<br>
+                    •	Any other related symptoms
+                    </p>`;
+                } else {
+                    incomingChatLi.innerHTML = `<p>謝謝您的描述。為了更準確地幫助您，我需要更多的資訊。請詳細描述您的症狀，包括：<br>
+                    - 持續的時間 <br>
+                    - 嚴重程度 <br>
+                    - 是否有其他相關症狀
+                    </p>`;
+                }
+            } else {
+                if (language === 'en') {
+                    incomingChatLi.innerHTML = `<p>The possible disease you have is <strong>${msg}</strong></p>`;
+                    var drugChatLi = createChatLi("To further confirm, you may want to consider seeing a doctor or undergoing additional tests. Would you like to know about over-the-counter medications related to this condition or symptoms?", "chat-incoming");
+                } else {
+                    incomingChatLi.innerHTML = `<p>您可能患有的疾病是<strong>${msg}</strong></p>`;
+                    var drugChatLi = createChatLi("為了進一步確認，您可以考慮去看醫生或進一步檢查。請問您是否想要了解與此疾病或症狀相關的成藥資訊?", "chat-incoming");
+                }
+                chatbox.insertBefore(drugChatLi, opt_elmt);
+                opt_elmt.style.display = "block";
             }
-            else {
-                incomingChatLi.innerHTML = `<p>您提供的資訊不足以進行疾病判別，請再詳述您的狀況。</p>`;
-            }
+            chatbox.scrollTo(0, chatbox.scrollHeight);
         }
-        else {
-            if (language == 'en') {
-                incomingChatLi.innerHTML = `<p>The possible disease you have is 
-                    <strong>${msg}</strong></p>`;
-                var drugChatLi = 
-                    createChatLi("Do you want to get information about disease-related over-the-counter drugs?", "chat-incoming");
-            }
-            else {
-                incomingChatLi.innerHTML = `<p>您可能患有的疾病是
-                    <strong>${msg}</strong></p>`;
-                var drugChatLi = 
-                    createChatLi("您是否想獲取與疾病、症狀相關的成藥資訊?", "chat-incoming");
-            }
-            chatbox.insertBefore(drugChatLi, opt_elmt);
-            opt_elmt.style.display = "block";
-        }
-        chatbox.scrollTo(0, chatbox.scrollHeight);
-    });
+    };
+    xhr.send(data_input);
 }
 
 $(document).ready(function(){
@@ -207,11 +209,13 @@ $(document).ready(function(){
                 drg.style.display = "block";
                 if (language == 'en') {
                     cpt.innerHTML = `Top ${Object.keys(msg).length} over-the-counter drug recommendations:`;
-                    chatbox.appendChild(createChatLi("Please ask the pharmacist again when going to the pharmacy.", "chat-incoming"));
+                    chatbox.appendChild(createChatLi("The table above is the over-the-counter drug recommendations for your symptoms.<br> However, everyone's situation is different, so be sure to consult your doctor or pharmacist before using any medication.", "chat-incoming"));
+                    chatbox.appendChild(createChatLi("As a reminder, always consult a pharmacist's advice again before purchasing or using any medication to ensure safe usage. Additionally, if your symptoms persist or worsen, seek medical attention promptly. Wishing you a speedy recovery!", "chat-incoming"));
                 }
                 else {
                     cpt.innerHTML = `成藥推薦前 ${Object.keys(msg).length} 名:`;
-                    chatbox.appendChild(createChatLi("請在去藥局賣藥時，再次詢問藥師。", "chat-incoming"));
+                    chatbox.appendChild(createChatLi("上面的表格為針對您症狀的成藥建議。<br>不過，每個人的情況不同，請務必在使用前諮詢您的醫生或藥師。", "chat-incoming"));
+                    chatbox.appendChild(createChatLi("提醒您，在購買或使用任何藥物前，務必再次詢問藥師的建議以確保用藥安全。同時，如果症狀持續或加重，請及時就醫。祝您早日康復！", "chat-incoming"));
                 }
                 for (var key in msg) {
                     var row = drug_tb.insertRow();

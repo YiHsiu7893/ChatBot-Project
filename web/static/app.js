@@ -4,7 +4,7 @@ var count = 1;
 
 const createChatLi = (message, className) => {
     const chatLi = document.createElement("li");
-    chatLi.classList.add("chat", className);
+    chatLi.classList.add(className, "chat");
     let chatContent = 
       className === "chat-outgoing" ? `<p>${message}</p>` : `<p>${message}</p>`;
     chatLi.innerHTML = chatContent;
@@ -48,6 +48,14 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // for adding avatars
+    // let robots = document.getElementsByClassName("robot");
+    // let users = document.getElementsByClassName("user");
+    // for (let i = 0; i < robots.length; i++) {
+    //     robots[i].innerHTML = '🤖';
+    //     users[i].innerHTML = '👤';
+    // }
 });
 
 function changeLang(lang) {
@@ -91,7 +99,6 @@ function sendMsg() {
     chatbox.scrollTo(0, chatbox.scrollHeight);
     data_input = JSON.stringify(inp_dict);
 
-    // rewrite following ajax call to vanilla js
     const xhr = new XMLHttpRequest();
     xhr.open("POST", "/func");
     xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
@@ -129,114 +136,155 @@ function sendMsg() {
     xhr.send(data_input);
 }
 
-$(document).ready(function(){
-    $('#opt_no-en, #opt_no-zh').click(function(){
-        if (language == 'en') {
-            sdBTN = document.getElementById("sendBTN-en");
-            opt_elmt = document.getElementById("opt-en");
-            chatbox = document.querySelector(".chatbox-en");
-            drg = document.getElementById("drugs-en");
-            cpt = document.getElementById("cpt_drugs-en");
-            drug_tb = document.getElementById("tb_drugs-en");
-            // opt_yes = document.querySelector("#opt-en #opt_yes");
-            // opt_no = document.querySelector("#opt-en #opt_no");
-        }
-        else {
-            sdBTN = document.getElementById("sendBTN-zh");
-            opt_elmt = document.getElementById("opt-zh");
-            chatbox = document.querySelector(".chatbox-zh");
-            drg = document.getElementById("drugs-zh");
-            cpt = document.getElementById("cpt_drugs-zh");
-            drug_tb = document.getElementById("tb_drugs-zh");
-            // opt_yes = document.querySelector("#opt-zh #opt_yes");
-            // opt_no = document.querySelector("#opt-zh #opt_no");
-        }
-        opt_elmt.style.display = "none";
-        chatbox.insertBefore(createChatLi("No.", "chat-outgoing"), opt_elmt);
-
-        sdBTN.style.backgroundColor = "red";
-        if (language == 'en') sdBTN.innerHTML = "Restart";
-        else sdBTN.innerHTML = "重新開始";
-        sdBTN.onclick = reset;
-        chatbox.scrollTo(0, chatbox.scrollHeight);
-    });
-    $('#opt_yes-en, #opt_yes-zh').click(function(){
-        if (language == 'en') {
-            sdBTN = document.getElementById("sendBTN-en");
-            opt_elmt = document.getElementById("opt-en");
-            chatbox = document.querySelector(".chatbox-en");
-            drg = document.getElementById("drugs-en");
-            cpt = document.getElementById("cpt_drugs-en");
-            drug_tb = document.getElementById("tb_drugs-en");
-            // opt_yes = document.querySelector("#opt-en #opt_yes");
-            // opt_no = document.querySelector("#opt-en #opt_no");
-        }
-        else {
-            sdBTN = document.getElementById("sendBTN-zh");
-            opt_elmt = document.getElementById("opt-zh");
-            chatbox = document.querySelector(".chatbox-zh");
-            drg = document.getElementById("drugs-zh");
-            cpt = document.getElementById("cpt_drugs-zh");
-            drug_tb = document.getElementById("tb_drugs-zh");
-            // opt_yes = document.querySelector("#opt-zh #opt_yes");
-            // opt_no = document.querySelector("#opt-zh #opt_no");
-        }
-        opt_elmt.style.display = "none";
-        var option = 'yes';
-        chatbox.insertBefore(createChatLi("Yes.", "chat-outgoing"), opt_elmt);
-        outgo_lis = document.querySelectorAll('.chat-outgoing');
-        var input = outgo_lis[outgo_lis.length - 2].innerText;
-        const incomingChatLi = createChatLi("Thinking...", "chat-incoming");
-        chatbox.insertBefore(incomingChatLi, opt_elmt);
-        chatbox.scrollTo(0, chatbox.scrollHeight);
-        $.ajax({
-            method: "POST",
-            url: "/drugs",
-            data: { option: option, user_input: input, lang: language}
-        })
-        .done(function( msg ) {
-            // msg is a json with key and value
-            if (Object.keys(msg).length == 0) {
-                if (language == 'en') {
-                    incomingChatLi.innerHTML = `<p>Sorry, no over-the-counter drug recommendations found.</p>`;
-                }
-                else {
-                    incomingChatLi.innerHTML = `<p>抱歉，於我們的資料中，找不到適合的成藥推薦。</p>`;
-                }
-            }    
-            else{
-                incomingChatLi.remove()
-                drg.style.display = "block";
-                if (language == 'en') {
-                    cpt.innerHTML = `Top ${Object.keys(msg).length} over-the-counter drug recommendations:`;
-                    chatbox.appendChild(createChatLi("The table above is the over-the-counter drug recommendations for your symptoms.<br> However, everyone's situation is different, so be sure to consult your doctor or pharmacist before using any medication.", "chat-incoming"));
-                    chatbox.appendChild(createChatLi("As a reminder, always consult a pharmacist's advice again before purchasing or using any medication to ensure safe usage. Additionally, if your symptoms persist or worsen, seek medical attention promptly. Wishing you a speedy recovery!", "chat-incoming"));
-                }
-                else {
-                    cpt.innerHTML = `成藥推薦前 ${Object.keys(msg).length} 名:`;
-                    chatbox.appendChild(createChatLi("上面的表格為針對您症狀的成藥建議。<br>不過，每個人的情況不同，請務必在使用前諮詢您的醫生或藥師。", "chat-incoming"));
-                    chatbox.appendChild(createChatLi("提醒您，在購買或使用任何藥物前，務必再次詢問藥師的建議以確保用藥安全。同時，如果症狀持續或加重，請及時就醫。祝您早日康復！", "chat-incoming"));
-                }
-                for (var key in msg) {
-                    var row = drug_tb.insertRow();
-                    var rank = row.insertCell(0);
-                    var name = row.insertCell(1);
-                    var simi = row.insertCell(2);
-                    var idc = row.insertCell(3);
-
-                    info = msg[key].split('@');
-
-                    rank.innerHTML = key;
-                    name.innerHTML = info[0];
-                    simi.innerHTML = info[1];
-                    idc.innerHTML = info[2];
-                }
-            }
-            chatbox.scrollTo(0, chatbox.scrollHeight);
-            sdBTN.style.backgroundColor = "red";
-            if (language == 'en') sdBTN.innerHTML = "Restart";
-            else sdBTN.innerHTML = "重新開始";
-            sdBTN.onclick = reset;
+document.addEventListener('DOMContentLoaded', function() {
+    const optNoEn = document.getElementById("opt_no-en");
+    const optNoZh = document.getElementById("opt_no-zh");
+    const optYesEn = document.getElementById("opt_yes-en");
+    const optYesZh = document.getElementById("opt_yes-zh");
+    const sendBtnEn = document.getElementById("sendBTN-en");
+    const sendBtnZh = document.getElementById("sendBTN-zh");
+    
+    if (optNoEn) {
+        optNoEn.addEventListener("click", function() {
+            handleOptionNo("en");
         });
-    });
+    }
+    if (optNoZh) {
+        optNoZh.addEventListener("click", function() {
+            handleOptionNo("zh");
+        });
+    }
+    if (optYesEn) {
+        optYesEn.addEventListener("click", function() {
+            handleOptionYes("en");
+        });
+    }
+    if (optYesZh) {
+        optYesZh.addEventListener("click", function() {
+            handleOptionYes("zh");
+        });
+    }
+    
+    function handleOptionNo(lang) {
+        let optElmt, chatbox, drg, cpt, drugTb;
+        
+        if (lang === 'en') {
+            optElmt = document.getElementById("opt-en");
+            chatbox = document.querySelector(".chatbox-en");
+            drg = document.getElementById("drugs-en");
+            cpt = document.getElementById("cpt_drugs-en");
+            drugTb = document.getElementById("tb_drugs-en");
+        } else {
+            optElmt = document.getElementById("opt-zh");
+            chatbox = document.querySelector(".chatbox-zh");
+            drg = document.getElementById("drugs-zh");
+            cpt = document.getElementById("cpt_drugs-zh");
+            drugTb = document.getElementById("tb_drugs-zh");
+        }
+        
+        optElmt.style.display = "none";
+        chatbox.insertBefore(createChatLi("No.", "chat-outgoing"), optElmt);
+        sendBtnEn.style.backgroundColor = "red";
+        sendBtnZh.style.backgroundColor = "red";
+        
+        if (lang === 'en') {
+            sendBtnEn.innerHTML = "Restart";
+        } else {
+            sendBtnZh.innerHTML = "重新開始";
+        }
+        
+        sendBtnEn.onclick = reset;
+        sendBtnZh.onclick = reset;
+        chatbox.scrollTo(0, chatbox.scrollHeight);
+    }
+    
+    function handleOptionYes(lang) {
+        let optElmt, chatbox, drg, cpt, drugTb;
+        
+        if (lang === 'en') {
+            optElmt = document.getElementById("opt-en");
+            chatbox = document.querySelector(".chatbox-en");
+            drg = document.getElementById("drugs-en");
+            cpt = document.getElementById("cpt_drugs-en");
+            drugTb = document.getElementById("tb_drugs-en");
+        } else {
+            optElmt = document.getElementById("opt-zh");
+            chatbox = document.querySelector(".chatbox-zh");
+            drg = document.getElementById("drugs-zh");
+            cpt = document.getElementById("cpt_drugs-zh");
+            drugTb = document.getElementById("tb_drugs-zh");
+        }
+        
+        optElmt.style.display = "none";
+        chatbox.insertBefore(createChatLi("Yes.", "chat-outgoing"), optElmt);
+        const outgoLis = document.querySelectorAll('.chat-outgoing');
+        const input = outgoLis[outgoLis.length - 2].innerText;
+        const incomingChatLi = createChatLi("Thinking...", "chat-incoming");
+        chatbox.insertBefore(incomingChatLi, optElmt);
+        chatbox.scrollTo(0, chatbox.scrollHeight);
+        
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", "/drugs");
+        xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                const msg = JSON.parse(xhr.responseText);
+                if (Object.keys(msg).length === 0) {
+                    if (lang === 'en') {
+                        incomingChatLi.innerHTML = `<p>Sorry, no over-the-counter drug recommendations found.</p>`;
+                    } else {
+                        incomingChatLi.innerHTML = `<p>抱歉，於我們的資料中，找不到適合的成藥推薦。</p>`;
+                    }
+                } else {
+                    incomingChatLi.remove();
+                    drg.style.display = "block";
+                    if (lang === 'en') {
+                        cpt.innerHTML = `Top ${Object.keys(msg).length} over-the-counter drug recommendations:`;
+                        chatbox.appendChild(createChatLi("The table above is the over-the-counter drug recommendations for your symptoms.<br> However, everyone's situation is different, so be sure to consult your doctor or pharmacist before using any medication.", "chat-incoming"));
+                        chatbox.appendChild(createChatLi("As a reminder, always consult a pharmacist's advice again before purchasing or using any medication to ensure safe usage. Additionally, if your symptoms persist or worsen, seek medical attention promptly. Wishing you a speedy recovery!", "chat-incoming"));
+                    }
+                    else {
+                        cpt.innerHTML = `成藥推薦前 ${Object.keys(msg).length} 名:`;
+                        chatbox.appendChild(createChatLi("上面的表格為針對您症狀的成藥建議。<br>不過，每個人的情況不同，請務必在使用前諮詢您的醫生或藥師。", "chat-incoming"));
+                        chatbox.appendChild(createChatLi("提醒您，在購買或使用任何藥物前，務必再次詢問藥師的建議以確保用藥安全。同時，如果症狀持續或加重，請及時就醫。祝您早日康復！", "chat-incoming"));
+                    }
+                    for (let key in msg) {
+                        var row = drugTb.insertRow();
+                        var rank = row.insertCell(0);
+                        var name = row.insertCell(1);
+                        var simi = row.insertCell(2);
+                        var idc = row.insertCell(3);
+
+                        info = msg[key].split('@');
+
+                        rank.innerHTML = key;
+                        name.innerHTML = info[0];
+                        simi.innerHTML = info[1];
+                        idc.innerHTML = info[2];
+                    }
+                }
+                chatbox.scrollTo(0, chatbox.scrollHeight);
+                sendBtnEn.style.backgroundColor = "red";
+                sendBtnZh.style.backgroundColor = "red";
+                
+                if (lang === 'en') {
+                    sendBtnEn.innerHTML = "Restart";
+                } else {
+                    sendBtnZh.innerHTML = "重新開始";
+                }
+                
+                sendBtnEn.onclick = reset;
+                sendBtnZh.onclick = reset;
+            }
+        };
+        
+        const option = 'yes';
+        const data = {
+            option: option,
+            user_input: input,
+            lang: lang
+        };
+
+        xhr.send(JSON.stringify(data));
+    }
 });

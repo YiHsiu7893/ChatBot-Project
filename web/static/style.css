@@ -40,6 +40,20 @@ header {
     border-radius: 7px 7px 0 0;
 }
 
+/* .robot {
+    float: inline-start;
+    position: relative;
+    top: -20px;
+    font-size: 25px;
+}
+.user {
+    float: inline-end;
+    position: relative;
+    top: -20px;
+    left: 15px;
+    font-size: 25px;
+} */
+
 header h2 {
     color: #fff;
     margin: 0;

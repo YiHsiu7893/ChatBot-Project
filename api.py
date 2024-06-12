@@ -26,9 +26,10 @@ def run_chatbot():
 @app.route('/drugs', methods=['POST'])
 def run_otc():
     if request.method == 'POST':
-        option = request.values['option'] # yes or no
-        input = request.values['user_input']
-        lang = request.values['lang']
+        json = request.get_json()
+        option = json['option'] # yes or no
+        input = json['user_input']
+        lang = json['lang']
         if option == 'yes':
             result = Chatbot.otc_recmd(input, lang).split('\n')
             

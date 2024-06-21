@@ -8,8 +8,11 @@ Then, run `python -W ignore Chatbot.py` to start.
 You can also run `python api.py` to check web service run in Flask.
 
 ## Architecture
-<img src="https://github.com/YiHsiu7893/ChatBot-Project/blob/main/images/architecture.jpg" width=70% height=70%>
+<img src="https://github.com/YiHsiu7893/ChatBot-Project/blob/main/images/arch1.png" width=70% height=70%>
 
+<img src="https://github.com/YiHsiu7893/ChatBot-Project/blob/main/images/arch2.png" width=70% height=70%>
+
+<img src="https://github.com/YiHsiu7893/ChatBot-Project/blob/main/images/arch3.png" width=70% height=70%>
 
 ## Datasets
 Use following datasets for training or drug recommendations.
